@@ -95,6 +95,28 @@ func OpenDevice(ctx *gousb.Context) (*Device, error) {
 		d.DefaultInterfaceInputEndpoint = 255
 	}
 
+	if prd, err := d.Device.Product(); err != nil {
+		return nil, err
+	} else {
+		for i, b := range []byte(prd) {
+			if i >= 128 {
+				break
+			}
+			d.ProductName[i] = b
+		}
+	}
+
+	if srl, prd, err := d.Device.SerialNumber(); err != nil {
+		return nil, err
+	} else {
+		for i, b := range []byte(srl) {
+			if i >= 128 {
+				break
+			}
+			d.ProductName[i] = b
+		}
+	}
+
 	return d, nil
 }
 
