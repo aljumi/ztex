@@ -1,12 +1,18 @@
 // Package ztex manages ZTEX USB FPGA modules.
 package ztex
 
+import (
+	"time"
+
+	"github.com/google/gousb"
+)
+
 var (
 	// VendorID is the ZTEX USB vendor ID (VID).
-	VendorID = 0x221A
+	VendorID = gousb.ID(0x221A)
 
 	// ProductID is the standard ZTEX USB product ID (PID)
-	ProductID = 0x0100
+	ProductID = gousb.ID(0x0100)
 
 	// ControlTimeout is the timeout for control transfers.
 	ControlTimeout = 1000 * time.Millisecond
@@ -35,20 +41,20 @@ type Device struct {
 	DefaultInterfaceInputEndpoint byte
 
 	// Device is the USB device handle for the module.
-	Device gousb.Device
+	Device *gousb.Device
 }
 
 func OpenDevice(ctx *gousb.Context) (*Device, error) {
 	d := &Device{}
 
 	if dev, err := ctx.OpenDeviceWithVIDPID(VendorID, ProductID); err != nil {
-		return err
+		return nil, err
 	} else {
-		dev.ControlTimeout = timeout
+		dev.ControlTimeout = ControlTimeout
 		d.Device = dev
 	}
 
-	buf := [128]byte
+	buf := make([]byte, 128)
 
 	// VR 0x33: High speed FPGA configuration support: Read Endpoint settings
 	if nbt, err := d.Device.Control(0xc0, 0x33, 0, 0, buf); err != nil {
@@ -65,7 +71,8 @@ func OpenDevice(ctx *gousb.Context) (*Device, error) {
 		d.FXVersion = buf[3]
 		d.BoardSeries = buf[4]
 		d.BoardNumber = buf[5]
-		copy(d.BoardVariant, buf[6:8])
+		d.BoardVariant[0] = buf[6]
+		d.BoardVariant[1] = buf[7]
 	} else {
 		d.BoardSeries = 255
 		d.BoardNumber = 255
@@ -73,19 +80,19 @@ func OpenDevice(ctx *gousb.Context) (*Device, error) {
 
 	// VR 0x64: Default firmware interface: Return Default Interface information
 	if nbt, err := d.Device.Control(0xc0, 0x64, 0, 0, buf); err != nil {
-		else if nbt == 4 {
-			d.DefaultInterfaceMajorVersion = buf[0]
-			d.DefaultInterfaceMinorVersion = buf[3]
-			d.DefaultInterfaceOutputEndpoint = buf[1] & 127
-			d.DefaultInterfaceInputEndpoint = buf[2] | 128
-		} else if nbt = 3 {
-			d.DefaultInterfaceMajorVersion = buf[0]
-			d.DefaultInterfaceOutputEndpoint = buf[1] & 127
-			d.DefaultInterfaceInputEndpoint = buf[2] | 128
-		} else {
-			d.DefaultInterfaceOutputEndpoint = 255
-			d.DefaultInterfaceInputEndpoint = 255
-		}
+		return nil, err
+	} else if nbt == 4 {
+		d.DefaultInterfaceMajorVersion = buf[0]
+		d.DefaultInterfaceMinorVersion = buf[3]
+		d.DefaultInterfaceOutputEndpoint = buf[1] & 127
+		d.DefaultInterfaceInputEndpoint = buf[2] | 128
+	} else if nbt == 3 {
+		d.DefaultInterfaceMajorVersion = buf[0]
+		d.DefaultInterfaceOutputEndpoint = buf[1] & 127
+		d.DefaultInterfaceInputEndpoint = buf[2] | 128
+	} else {
+		d.DefaultInterfaceOutputEndpoint = 255
+		d.DefaultInterfaceInputEndpoint = 255
 	}
 
 	return d, nil
