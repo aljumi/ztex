@@ -4,6 +4,7 @@ package ztex
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/google/gousb"
@@ -125,7 +126,24 @@ type Device struct {
 	DefaultInterfaceInputEndpoint byte
 }
 
-// OpenDevice opens the
+// String returns a human-readable representation of the device.
+func (d *Device) String() string {
+	mfr, _ := d.Manufacturer()
+	prd, _ := d.Product()
+	snr, _ := d.SerialNumber()
+
+	lines := []string{}
+	lines = append(lines, fmt.Sprintf("Manufacturer: %v", mfr))
+	lines = append(lines, fmt.Sprintf("Product: %v", prd))
+	lines = append(lines, fmt.Sprintf("Serial Number: %v", snr))
+	lines = append(lines, fmt.Sprintf("Firmware Version: %v", d.Firmware))
+	lines = append(lines, fmt.Sprintf("Board Version: %v", d.Board))
+
+	return strings.Join(lines, "\n")
+}
+
+// OpenDevice opens a ZTEX USB FPGA module and returns its device handle.
+// If there are multiple modules present, then one is chosen arbitrarily.
 func OpenDevice(ctx *gousb.Context) (*Device, error) {
 	d := &Device{}
 	if dev, err := ctx.OpenDeviceWithVIDPID(VendorID, ProductID); err != nil {
@@ -178,6 +196,7 @@ func OpenDevice(ctx *gousb.Context) (*Device, error) {
 		d.DefaultInterfaceInputEndpoint = buf[2] | 128
 	} else if nbt == 3 {
 		d.DefaultInterfaceMajorVersion = buf[0]
+		d.DefaultInterfaceMinorVersion = 0
 		d.DefaultInterfaceOutputEndpoint = buf[1] & 127
 		d.DefaultInterfaceInputEndpoint = buf[2] | 128
 	} else {
