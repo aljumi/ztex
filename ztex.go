@@ -376,7 +376,6 @@ func (d *Device) String() string {
 	lines = append(lines, fmt.Sprintf("FPGA: %v", d.FPGAConfig))
 	lines = append(lines, fmt.Sprintf("RAM: %v", d.RAMConfig))
 	lines = append(lines, fmt.Sprintf("Bitstream: %v", d.BitstreamConfig))
-	lines = append(lines, fmt.Sprintf("Bytes: %v", d.Bytes))
 
 	return strings.Join(lines, "\n")
 }
