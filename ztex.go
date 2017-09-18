@@ -19,11 +19,11 @@ const (
 
 func binaryPrefix(count uint64, unit string) string {
 	switch {
-	case count&(1<<30-1) == 0:
+	case count != 0 && count&(1<<30-1) == 0:
 		return fmt.Sprintf("%v Gi%v (%v %v)", count>>30, unit, count, unit)
-	case count&(1<<20-1) == 0:
+	case count != 0 && count&(1<<20-1) == 0:
 		return fmt.Sprintf("%v Mi%v (%v %v)", count>>20, unit, count, unit)
-	case count&(1<<10-1) == 0:
+	case count != 0 && count&(1<<10-1) == 0:
 		return fmt.Sprintf("%v Ki%v (%v %v)", count>>10, unit, count, unit)
 	default:
 		return fmt.Sprintf("%v %v", count, unit)
