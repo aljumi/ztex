@@ -2,7 +2,6 @@
 package ztex
 
 import (
-	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -26,9 +25,9 @@ func (b BoardType) String() string {
 	case 1:
 		return "ZTEX FPGA Module"
 	case 2:
-		return "ZTEX USB-FPGA Module (Cypress CY7C68013A EZ-USB FX2)"
+		return "ZTEX USB-FPGA Module"
 	case 3:
-		return "ZTEX USB3-FPGA Module (Cypress CYUSB3033 EZ-USB FX3S)"
+		return "ZTEX USB3-FPGA Module"
 	default:
 		return "Unknown"
 	}
@@ -91,8 +90,8 @@ func (b BoardVariant) Bytes() []byte {
 }
 
 // BoardVersion indicates the type, series, number, and variant of a ZTEX
-// USB-FPGA module.  For example, a ZTEX USB3-FPGA module 2.18b device
-// would be represented by
+// USB-FPGA module.  For example, a ZTEX USB3-FPGA 2.18b module would be
+// represented by
 //
 //   BoardVersion{
 //     BoardType: BoardType(3),
@@ -157,7 +156,7 @@ func (f FPGAType) String() string {
 func (f FPGAType) Bytes() []byte { return []byte{f[0], f[1]} }
 
 // Number returns a numeric representation of an FPGA type.
-func (f FPGAType) Number() uint16 { return (uint16(f[0]) << 8) | (uint16(f[1]) << 0) }
+func (f FPGAType) Number() uint16 { return (uint16(f[1]) << 8) | (uint16(f[0]) << 0) }
 
 // FPGAPackage indicates the mechanical packaging of the FPGA.
 type FPGAPackage uint8
@@ -189,7 +188,7 @@ type FPGAVersion struct {
 }
 
 func (f FPGAVersion) String() string {
-	return fmt.Sprintf("Type: %v, Package: %v", f.FPGAType, f.FPGAPackage)
+	return fmt.Sprintf("%v %v", f.FPGAType, f.FPGAPackage)
 }
 
 // Device represents a ZTEX USB-FPGA module.
@@ -212,8 +211,8 @@ func (d *Device) String() string {
 	lines = append(lines, fmt.Sprintf("Manufacturer: %v", mfr))
 	lines = append(lines, fmt.Sprintf("Product: %v", prd))
 	lines = append(lines, fmt.Sprintf("Serial Number: %v", snr))
-	lines = append(lines, fmt.Sprintf("Board: %v", d.BoardVersion))
-	lines = append(lines, fmt.Sprintf("FPGA: %v", d.FPGAVersion))
+	lines = append(lines, fmt.Sprintf("Board Version: %v", d.BoardVersion))
+	lines = append(lines, fmt.Sprintf("FPGA Version: %v", d.FPGAVersion))
 
 	return strings.Join(lines, "\n")
 }
@@ -237,14 +236,13 @@ func OpenDevice(ctx *gousb.Context, opt ...DeviceOption) (*Device, error) {
 	if dev, err := ctx.OpenDeviceWithVIDPID(VendorID, ProductID); err != nil {
 		return nil, err
 	} else if dev == nil {
-		return nil, errors.New("no device")
+		return nil, fmt.Errorf("OpenDeviceWithVIDPID: got nil device, want non-nil device")
 	} else {
 		d.Device = dev
 	}
 
-	buf := make([]byte, 128)
-
 	// VR 0x3b: MAC EEPROM support: Read from MAC EEPROM
+	buf := make([]byte, 128)
 	if n, err := d.Control(0xc0, 0x3b, 0, 0, buf); err != nil {
 		return nil, err
 	} else if n != 128 {
@@ -252,14 +250,12 @@ func OpenDevice(ctx *gousb.Context, opt ...DeviceOption) (*Device, error) {
 	} else if buf[0] != 'C' || buf[1] != 'D' || buf[2] != '0' {
 		return nil, fmt.Errorf("read from MAC EEPROM: got %v, want %v", buf[:3], []byte{'C', 'D', '0'})
 	}
-
 	d.BoardVersion = BoardVersion{
 		BoardType(buf[3]),
 		BoardSeries(buf[4]),
 		BoardNumber(buf[5]),
 		BoardVariant([2]byte{buf[6], buf[7]}),
 	}
-
 	d.FPGAVersion = FPGAVersion{
 		FPGAType([2]byte{buf[8], buf[9]}),
 		FPGAPackage(buf[10]),
