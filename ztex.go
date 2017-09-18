@@ -109,7 +109,7 @@ type BoardConfig struct {
 
 // String returns a human-readable representation of a board version.
 func (b BoardConfig) String() string {
-	return fmt.Sprintf("%v %v.%v%v", b.BoardType, b.BoardSeries, b.BoardNumber, b.BoardVariant)
+	return fmt.Sprintf("Type %v, Version %v.%v%v", b.BoardType, b.BoardSeries, b.BoardNumber, b.BoardVariant)
 }
 
 // FPGAType indicates which FPGA device is present.
@@ -210,7 +210,7 @@ type FPGAConfig struct {
 
 // String returns a human-readable representation of the FPGA version.
 func (f FPGAConfig) String() string {
-	return fmt.Sprintf("%v %v %v", f.FPGAType, f.FPGAPackage, f.FPGAGrade)
+	return fmt.Sprintf("Type %v, Package %v, Grade %v", f.FPGAType, f.FPGAPackage, f.FPGAGrade)
 }
 
 // RAMSize indicates the amount of RAM available on the module.
@@ -272,34 +272,34 @@ type RAMConfig struct {
 
 // String returns a human-readable representation of the RAM configuration.
 func (r RAMConfig) String() string {
-	return fmt.Sprintf("%v %v", r.RAMSize, r.RAMType)
+	return fmt.Sprintf("Size %v, Type %v", r.RAMSize, r.RAMType)
 }
 
-// BitstreamActual indicates the actual size of the FPGA bitstream in
+// BitstreamSize indicates the actual size of the FPGA bitstream in
 // 4 kiB sectors.
-type BitstreamActual [2]byte
+type BitstreamSize [2]byte
 
 // String returns a human-readable representation of the bitstream size.
-func (b BitstreamActual) String() string {
+func (b BitstreamSize) String() string {
 	return fmt.Sprintf("%v", b.Number())
 }
 
 // Number returns a raw numeric representation of the bitstream size.
-func (b BitstreamActual) Number() uint16 {
+func (b BitstreamSize) Number() uint16 {
 	return (uint16(b[0]) << 0) | (uint16(b[1]) << 8)
 }
 
-// BitstreamMaximum indicates the maximum size of the FPGA bitstream in
+// BitstreamCapacity indicates the maximum size of the FPGA bitstream in
 // 4 kiB sectors.
-type BitstreamMaximum [2]byte
+type BitstreamCapacity [2]byte
 
 // String returns a human-readable representation of the bitstream size.
-func (b BitstreamMaximum) String() string {
+func (b BitstreamCapacity) String() string {
 	return fmt.Sprintf("%v", b.Number())
 }
 
 // Number returns a raw numeric representation of the bitstream size.
-func (b BitstreamMaximum) Number() uint16 {
+func (b BitstreamCapacity) Number() uint16 {
 	return (uint16(b[0]) << 0) | (uint16(b[1]) << 8)
 }
 
@@ -318,15 +318,15 @@ func (b BitstreamStart) Number() uint16 {
 
 // BitstreamConfig indicates the configuration of the bitstream in flash.
 type BitstreamConfig struct {
-	BitstreamActual
-	BitstreamMaximum
+	BitstreamSize
+	BitstreamCapacity
 	BitstreamStart
 }
 
 // String returns a human-readable representation of the bitstream
 // configuration.
 func (b BitstreamConfig) String() string {
-	return fmt.Sprintf("%v actual, %v maximum, %v start", b.BitstreamActual, b.BitstreamMaximum, b.BitstreamStart)
+	return fmt.Sprintf("Size %v, Capacity %v, Start %v", b.BitstreamSize, b.BitstreamCapacity, b.BitstreamStart)
 }
 
 // DeviceConfig indicates the characteristics of the device.
@@ -412,8 +412,8 @@ func OpenDevice(ctx *gousb.Context, opt ...DeviceOption) (*Device, error) {
 		RAMType(b[15]),
 	}
 	d.BitstreamConfig = BitstreamConfig{
-		BitstreamActual([2]byte{b[26], b[27]}),
-		BitstreamMaximum([2]byte{b[28], b[29]}),
+		BitstreamSize([2]byte{b[26], b[27]}),
+		BitstreamCapacity([2]byte{b[28], b[29]}),
 		BitstreamStart([2]byte{b[30], b[31]}),
 	}
 	d.Bytes = b
