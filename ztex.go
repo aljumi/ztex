@@ -17,6 +17,19 @@ const (
 	ProductID = gousb.ID(0x0100)
 )
 
+func binaryPrefix(count uint64, unit string) string {
+	switch {
+	case count&(1<<30-1) == 0:
+		return fmt.Sprintf("%v Gi%v (%v %v)", count>>30, unit, count, unit)
+	case count&(1<<20-1) == 0:
+		return fmt.Sprintf("%v Mi%v (%v %v)", count>>20, unit, count, unit)
+	case count&(1<<10-1) == 0:
+		return fmt.Sprintf("%v Ki%v (%v %v)", count>>10, unit, count, unit)
+	default:
+		return fmt.Sprintf("%v %v", count, unit)
+	}
+}
+
 // BoardType indicates the board type associated with the device.
 type BoardType uint8
 
@@ -230,16 +243,7 @@ type RAMSize uint8
 
 // String returns a human-readable representation of the RAM size.
 func (r RAMSize) String() string {
-	switch b := (uint64(r & 0xf0)) << ((uint(r & 0xf)) + 16); {
-	case b&(1<<30-1) == 0:
-		return fmt.Sprintf("%v GiB (%v B)", b>>30, b)
-	case b&(1<<20-1) == 0:
-		return fmt.Sprintf("%v MiB (%v B)", b>>20, b)
-	case b&(1<<10-1) == 0:
-		return fmt.Sprintf("%v kiB (%v B)", b>>10, b)
-	default:
-		return fmt.Sprintf("%v B", b)
-	}
+	return binaryPrefix((uint64(r&0xf0))<<((uint(r&0xf))+16), "B")
 }
 
 // Number returns a raw numeric representation of the RAM size.
@@ -368,14 +372,10 @@ func (d *Device) String() string {
 	lines = append(lines, fmt.Sprintf("Manufacturer: %v", mfr))
 	lines = append(lines, fmt.Sprintf("Product: %v", prd))
 	lines = append(lines, fmt.Sprintf("Serial Number: %v", snr))
-	lines = append(lines, fmt.Sprintf("Board Type: %v", d.BoardType))
-	lines = append(lines, fmt.Sprintf("Board Version: %v", d.BoardVersion))
-	lines = append(lines, fmt.Sprintf("FPGA Type: %v", d.FPGAType))
-	lines = append(lines, fmt.Sprintf("FPGA Package: %v", d.FPGAPackage))
-	lines = append(lines, fmt.Sprintf("FPGA Grade: %v", d.FPGAGrade))
-	lines = append(lines, fmt.Sprintf("RAM Size: %v", d.RAMSize))
-	lines = append(lines, fmt.Sprintf("RAM Type: %v", d.RAMType))
-	lines = append(lines, fmt.Sprintf("Bitstream Size: %v", d.BitstreamSize))
+	lines = append(lines, fmt.Sprintf("Board: %v", d.BoardConfig))
+	lines = append(lines, fmt.Sprintf("FPGA: %v", d.FPGAConfig))
+	lines = append(lines, fmt.Sprintf("RAM: %v", d.RAMConfig))
+	lines = append(lines, fmt.Sprintf("Bitstream: %v", d.BitstreamConfig))
 	lines = append(lines, fmt.Sprintf("Bitstream Capacity: %v", d.BitstreamCapacity))
 	lines = append(lines, fmt.Sprintf("Bitstream Start: %v", d.BitstreamStart))
 	lines = append(lines, fmt.Sprintf("Bytes: %v", d.Bytes))
