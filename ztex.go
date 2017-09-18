@@ -88,23 +88,35 @@ func (b BoardVariant) Bytes() []byte {
 	}
 }
 
+// BoardVersion indicates the series, number, and variant of a module.
+type BoardVersion struct {
+	BoardSeries
+	BoardNumber
+	BoardVariant
+}
+
+// String returns a human-readable representation of the board version.
+func (b BoardVersion) String() string {
+	return fmt.Sprintf("%v.%v%v", b.BoardSeries, b.BoardNumber, b.BoardVariant)
+}
+
 // BoardConfig indicates the type, series, number, and variant of a ZTEX
 // USB-FPGA module.  For example, a ZTEX USB3-FPGA 2.18b module would be
 // represented by
 //
 //   BoardConfig{
 //     BoardType: BoardType(3),
-//     BoardSeries: BoardSeries(2),
-//     BoardNumber: BoardNumber(18),
-//     BoardVariant: BoardVariant([2]byte{0x62, 0x00}]),
+//     BoardVersion{
+//       BoardSeries: BoardSeries(2),
+//       BoardNumber: BoardNumber(18),
+//       BoardVariant: BoardVariant([2]byte{0x62, 0x00}]),
+//     },
 //   }
 //
 // as a BoardConfig structure.
 type BoardConfig struct {
 	BoardType
-	BoardSeries
-	BoardNumber
-	BoardVariant
+	BoardVersion
 }
 
 // String returns a human-readable representation of a board version.
@@ -398,9 +410,11 @@ func OpenDevice(ctx *gousb.Context, opt ...DeviceOption) (*Device, error) {
 	}
 	d.BoardConfig = BoardConfig{
 		BoardType(b[3]),
-		BoardSeries(b[4]),
-		BoardNumber(b[5]),
-		BoardVariant([2]byte{b[6], b[7]}),
+		BoardVersion{
+			BoardSeries(b[4]),
+			BoardNumber(b[5]),
+			BoardVariant([2]byte{b[6], b[7]}),
+		},
 	}
 	d.FPGAConfig = FPGAConfig{
 		FPGAType([2]byte{b[8], b[9]}),
