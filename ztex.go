@@ -12,6 +12,7 @@ import (
 const (
 	// VendorID is the ZTEX USB vendor ID (VID).
 	VendorID = gousb.ID(0x221A)
+
 	// ProductID is the standard ZTEX USB product ID (PID)
 	ProductID = gousb.ID(0x0100)
 )
@@ -89,19 +90,19 @@ func (b BoardVariant) Bytes() []byte {
 	return c
 }
 
-// BoardVersion indicates the type, series, number, and variant of a ZTEX
+// BoardConfig indicates the type, series, number, and variant of a ZTEX
 // USB-FPGA module.  For example, a ZTEX USB3-FPGA 2.18b module would be
 // represented by
 //
-//   BoardVersion{
+//   BoardConfig{
 //     BoardType: BoardType(3),
 //     BoardSeries: BoardSeries(2),
 //     BoardNumber: BoardNumber(18),
 //     BoardVariant: BoardVariant([2]byte{0x62, 0x00}]),
 //   }
 //
-// as a BoardVersion structure.
-type BoardVersion struct {
+// as a BoardConfig structure.
+type BoardConfig struct {
 	BoardType
 	BoardSeries
 	BoardNumber
@@ -109,7 +110,7 @@ type BoardVersion struct {
 }
 
 // String returns a human-readable representation of a board version.
-func (b BoardVersion) String() string {
+func (b BoardConfig) String() string {
 	return fmt.Sprintf("%v %v.%v%v", b.BoardType, b.BoardSeries, b.BoardNumber, b.BoardVariant)
 }
 
@@ -180,23 +181,75 @@ func (f FPGAPackage) String() string {
 // Number returns the raw numeric representation of an FPGA package.
 func (f FPGAPackage) Number() uint8 { return uint8(f) }
 
-// FPGAVersion indicates the type, package, speed grade, etc. of the FPGA
+// FPGAConfig indicates the type, package, speed grade, etc. of the FPGA
 // present in a device.
-type FPGAVersion struct {
+type FPGAConfig struct {
 	FPGAType
 	FPGAPackage
 }
 
-func (f FPGAVersion) String() string {
+// String returns a human-readable representation of the FPGA version.
+func (f FPGAConfig) String() string {
 	return fmt.Sprintf("%v %v", f.FPGAType, f.FPGAPackage)
+}
+
+// RAMSize indicates the amount of RAM available on the module.
+type RAMSize uint8
+
+// String returns a human-readable representation of the RAM size.
+func (r RAMSize) String() string {
+	return fmt.Sprintf("%vB", (uint64(r&0xf0))<<((uint(r&0xf))+16))
+}
+
+// Number returns a raw numeric representation of the RAM size.
+func (r RAMSize) Number() uint8 { return uint8(r) }
+
+// RAMType indicates the type of RAM available on the module.
+type RAMType uint8
+
+// String returns a human-readable representation of the RAM type.
+func (r RAMType) String() string {
+	switch r {
+	case 1:
+		return "DDR-200 SDRAM"
+	case 2:
+		return "DDR-266 SDRAM"
+	case 3:
+		return "DDR-333 SDRAM"
+	case 4:
+		return "DDR-400 SDRAM"
+	case 5:
+		return "DDR2-400 SDRAM"
+	case 6:
+		return "DDR2-533 SDRAM"
+	case 7:
+		return "DDR2-667 SDRAM"
+	case 8:
+		return "DDR2-800 SDRAM"
+	case 9:
+		return "DDR2-1066 SDRAM"
+	default:
+		return "Unknown"
+	}
+}
+
+type RAMConfig struct {
+	RAMSize
+	RAMType
+}
+
+// String returns a human-readable representation of the RAM configuration.
+func (r RAMConfig) String() string {
+	return fmt.Sprintf("%v %v", r.RAMSize, r.RAMType)
 }
 
 // Device represents a ZTEX USB-FPGA module.
 type Device struct {
 	*gousb.Device
 
-	BoardVersion
-	FPGAVersion
+	BoardConfig
+	FPGAConfig
+	RAMConfig
 
 	Bytes []byte
 }
@@ -211,17 +264,19 @@ func (d *Device) String() string {
 	lines = append(lines, fmt.Sprintf("Manufacturer: %v", mfr))
 	lines = append(lines, fmt.Sprintf("Product: %v", prd))
 	lines = append(lines, fmt.Sprintf("Serial Number: %v", snr))
-	lines = append(lines, fmt.Sprintf("Board Version: %v", d.BoardVersion))
-	lines = append(lines, fmt.Sprintf("FPGA Version: %v", d.FPGAVersion))
+	lines = append(lines, fmt.Sprintf("Board: %v", d.BoardConfig))
+	lines = append(lines, fmt.Sprintf("FPGA: %v", d.FPGAConfig))
+	lines = append(lines, fmt.Sprintf("RAM: %v", d.RAMConfig))
+
+	lines = append(lines, fmt.Sprintf("Bytes: %v", d.Bytes))
 
 	return strings.Join(lines, "\n")
 }
 
-// DeviceOption represents a functional option for devices.
+// DeviceOption represents a device option.
 type DeviceOption func(*Device) error
 
-// ControlTimeout is a device option that sets the timeout for control
-// commands.
+// ControlTimeout sets the timeout for control commands for the device.
 func ControlTimeout(timeout time.Duration) DeviceOption {
 	return func(d *Device) error {
 		d.ControlTimeout = timeout
@@ -249,16 +304,22 @@ func OpenDevice(ctx *gousb.Context, opt ...DeviceOption) (*Device, error) {
 		return nil, fmt.Errorf("read from MAC EEPROM: got %v bytes, want %v bytes", n, 128)
 	} else if buf[0] != 'C' || buf[1] != 'D' || buf[2] != '0' {
 		return nil, fmt.Errorf("read from MAC EEPROM: got %v, want %v", buf[:3], []byte{'C', 'D', '0'})
+	} else {
+		d.Bytes = buf
 	}
-	d.BoardVersion = BoardVersion{
+	d.BoardConfig = BoardConfig{
 		BoardType(buf[3]),
 		BoardSeries(buf[4]),
 		BoardNumber(buf[5]),
 		BoardVariant([2]byte{buf[6], buf[7]}),
 	}
-	d.FPGAVersion = FPGAVersion{
+	d.FPGAConfig = FPGAConfig{
 		FPGAType([2]byte{buf[8], buf[9]}),
 		FPGAPackage(buf[10]),
+	}
+	d.RAMConfig = RAMConfig{
+		RAMSize(buf[14]),
+		RAMType(buf[15]),
 	}
 
 	for _, o := range opt {
