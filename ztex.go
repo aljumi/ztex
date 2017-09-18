@@ -15,6 +15,9 @@ const (
 
 	// ProductID is the standard ZTEX USB product ID (PID)
 	ProductID = gousb.ID(0x0100)
+
+	// Unknown is the string used to describe unknown values or components.
+	Unknown = "Unknown"
 )
 
 func binaryPrefix(count uint64, unit string) string {
@@ -43,7 +46,7 @@ func (b BoardType) String() string {
 	case 3:
 		return "ZTEX USB3-FPGA Module (Cypress CYUSB3033 EZ-USB FX3S)"
 	default:
-		return "Unknown"
+		return Unknown
 	}
 }
 
@@ -62,7 +65,7 @@ func (b BoardSeries) String() string {
 	case 2:
 		return "2"
 	default:
-		return "Unknown"
+		return Unknown
 	}
 }
 
@@ -74,10 +77,12 @@ type BoardNumber uint8
 
 // String returns a human-readable description of a board number.
 func (b BoardNumber) String() string {
-	if b == 255 {
-		return "Unknown"
+	switch {
+	case b == 255:
+		return Unknown
+	default:
+		return fmt.Sprintf("%d", uint8(b))
 	}
-	return fmt.Sprintf("%d", uint8(b))
 }
 
 // Number returns the raw representation of a board number.
@@ -172,7 +177,7 @@ func (f FPGAType) String() string {
 	case 14:
 		return "Xilinx Artix-7 XC7A15T"
 	default:
-		return "Unknown"
+		return Unknown
 	}
 }
 
@@ -197,7 +202,7 @@ func (f FPGAPackage) String() string {
 	case 4:
 		return "FBG484"
 	default:
-		return "Unknown"
+		return Unknown
 	}
 }
 
@@ -276,7 +281,7 @@ func (r RAMType) String() string {
 	case 10:
 		return "DDR3-400 SDRAM"
 	default:
-		return "Unknown"
+		return Unknown
 	}
 }
 
