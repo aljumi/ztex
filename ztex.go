@@ -25,9 +25,9 @@ func (b BoardType) String() string {
 	case 1:
 		return "ZTEX FPGA Module"
 	case 2:
-		return "ZTEX USB-FPGA Module"
+		return "ZTEX USB-FPGA Module (Cypress CY7C68013A EZ-USB FX2)"
 	case 3:
-		return "ZTEX USB3-FPGA Module"
+		return "ZTEX USB3-FPGA Module (Cypress CYUSB3033 EZ-USB FX3S)"
 	default:
 		return "Unknown"
 	}
