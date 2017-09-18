@@ -297,7 +297,7 @@ type BitstreamSize [2]byte
 
 // String returns a human-readable representation of the bitstream size.
 func (b BitstreamSize) String() string {
-	return fmt.Sprintf("%v", b.Number())
+	return binaryPrefix(uint64(b.Number())<<12, "B")
 }
 
 // Number returns a raw numeric representation of the bitstream size.
@@ -311,7 +311,7 @@ type BitstreamCapacity [2]byte
 
 // String returns a human-readable representation of the bitstream size.
 func (b BitstreamCapacity) String() string {
-	return fmt.Sprintf("%v", b.Number())
+	return binaryPrefix(uint64(b.Number())<<12, "B")
 }
 
 // Number returns a raw numeric representation of the bitstream size.
@@ -324,7 +324,7 @@ type BitstreamStart [2]byte
 
 // String returns a human-readable representation of the bitstream size.
 func (b BitstreamStart) String() string {
-	return fmt.Sprintf("%v", b.Number())
+	return binaryPrefix(uint64(b.Number())<<12, "B")
 }
 
 // Number returns a raw numeric representation of the bitstream size.
