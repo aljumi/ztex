@@ -368,11 +368,18 @@ func (d *Device) String() string {
 	lines = append(lines, fmt.Sprintf("Manufacturer: %v", mfr))
 	lines = append(lines, fmt.Sprintf("Product: %v", prd))
 	lines = append(lines, fmt.Sprintf("Serial Number: %v", snr))
-	lines = append(lines, fmt.Sprintf("Board: %v", d.BoardConfig))
-	lines = append(lines, fmt.Sprintf("FPGA: %v", d.FPGAConfig))
-	lines = append(lines, fmt.Sprintf("RAM: %v", d.RAMConfig))
-	lines = append(lines, fmt.Sprintf("Bitstream: %v", d.BitstreamConfig))
+	lines = append(lines, fmt.Sprintf("Board Type: %v", d.BoardType))
+	lines = append(lines, fmt.Sprintf("Board Version: %v", d.BoardVersion))
+	lines = append(lines, fmt.Sprintf("FPGA Type: %v", d.FPGAType))
+	lines = append(lines, fmt.Sprintf("FPGA Package: %v", d.FPGAPackage))
+	lines = append(lines, fmt.Sprintf("FPGA Grade: %v", d.FPGAGrade))
+	lines = append(lines, fmt.Sprintf("RAM Size: %v", d.RAMSize))
+	lines = append(lines, fmt.Sprintf("RAM Type: %v", d.RAMType))
+	lines = append(lines, fmt.Sprintf("Bitstream Size: %v", d.BitstreamSize))
+	lines = append(lines, fmt.Sprintf("Bitstream Capacity: %v", d.BitstreamCapacity))
+	lines = append(lines, fmt.Sprintf("Bitstream Start: %v", d.BitstreamStart))
 	lines = append(lines, fmt.Sprintf("Bytes: %v", d.Bytes))
+
 	return strings.Join(lines, "\n")
 }
 
