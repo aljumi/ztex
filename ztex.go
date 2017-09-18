@@ -78,16 +78,14 @@ func (b BoardVariant) String() string { return string(b.Bytes()) }
 
 // Bytes returns the raw representation of a board variant.
 func (b BoardVariant) Bytes() []byte {
-	c := make([]byte, 0, 2)
-	if b[0] == 0 {
-		return c
+	switch {
+	case b[0] == 0:
+		return []byte{}
+	case b[1] == 0:
+		return []byte{b[0]}
+	default:
+		return []byte{b[0], b[1]}
 	}
-	c = append(c, b[0])
-	if b[1] == 0 {
-		return c
-	}
-	c = append(c, b[1])
-	return c
 }
 
 // BoardConfig indicates the type, series, number, and variant of a ZTEX
@@ -157,7 +155,7 @@ func (f FPGAType) String() string {
 func (f FPGAType) Bytes() []byte { return []byte{f[0], f[1]} }
 
 // Number returns a numeric representation of an FPGA type.
-func (f FPGAType) Number() uint16 { return (uint16(f[1]) << 8) | (uint16(f[0]) << 0) }
+func (f FPGAType) Number() uint16 { return (uint16(f[0]) << 0) | (uint16(f[1]) << 8) }
 
 // FPGAPackage indicates the mechanical packaging of the FPGA.
 type FPGAPackage uint8
@@ -181,11 +179,33 @@ func (f FPGAPackage) String() string {
 // Number returns the raw numeric representation of an FPGA package.
 func (f FPGAPackage) Number() uint8 { return uint8(f) }
 
+// FPGAGrade indicates the speed grade, operating voltages, and
+// temperature range of the FPGA.
+type FPGAGrade [3]byte
+
+// String returns a human-readable representation of the FPGA grade.
+func (f FPGAGrade) String() string { return string(f.Bytes()) }
+
+// Bytes returns the raw representation of the FPGA grade.
+func (f FPGAGrade) Bytes() []byte {
+	switch {
+	case f[0] == 0:
+		return []byte{}
+	case f[1] == 0:
+		return []byte{f[0]}
+	case f[2] == 0:
+		return []byte{f[0], f[1]}
+	default:
+		return []byte{f[0], f[1], f[2]}
+	}
+}
+
 // FPGAConfig indicates the type, package, speed grade, etc. of the FPGA
 // present in a device.
 type FPGAConfig struct {
 	FPGAType
 	FPGAPackage
+	FPGAGrade
 }
 
 // String returns a human-readable representation of the FPGA version.
@@ -244,6 +264,7 @@ func (r RAMType) String() string {
 	}
 }
 
+// RAMConfig indicates the size and type of the RAM in the module.
 type RAMConfig struct {
 	RAMSize
 	RAMType
@@ -278,7 +299,6 @@ func (d *Device) String() string {
 	lines = append(lines, fmt.Sprintf("Board: %v", d.BoardConfig))
 	lines = append(lines, fmt.Sprintf("FPGA: %v", d.FPGAConfig))
 	lines = append(lines, fmt.Sprintf("RAM: %v", d.RAMConfig))
-
 	lines = append(lines, fmt.Sprintf("Bytes: %v", d.Bytes))
 
 	return strings.Join(lines, "\n")
@@ -308,30 +328,30 @@ func OpenDevice(ctx *gousb.Context, opt ...DeviceOption) (*Device, error) {
 	}
 
 	// VR 0x3b: MAC EEPROM support: Read from MAC EEPROM
-	buf := make([]byte, 128)
-	if n, err := d.Control(0xc0, 0x3b, 0, 0, buf); err != nil {
+	b := make([]byte, 128)
+	if n, err := d.Control(0xc0, 0x3b, 0, 0, b); err != nil {
 		return nil, err
 	} else if n != 128 {
 		return nil, fmt.Errorf("read from MAC EEPROM: got %v bytes, want %v bytes", n, 128)
-	} else if buf[0] != 'C' || buf[1] != 'D' || buf[2] != '0' {
-		return nil, fmt.Errorf("read from MAC EEPROM: got %v, want %v", buf[:3], []byte{'C', 'D', '0'})
-	} else {
-		d.Bytes = buf
+	} else if b[0] != 'C' || b[1] != 'D' || b[2] != '0' {
+		return nil, fmt.Errorf("read from MAC EEPROM: got signature %v, want signature %v", b[:3], []byte{'C', 'D', '0'})
 	}
 	d.BoardConfig = BoardConfig{
-		BoardType(buf[3]),
-		BoardSeries(buf[4]),
-		BoardNumber(buf[5]),
-		BoardVariant([2]byte{buf[6], buf[7]}),
+		BoardType(b[3]),
+		BoardSeries(b[4]),
+		BoardNumber(b[5]),
+		BoardVariant([2]byte{b[6], b[7]}),
 	}
 	d.FPGAConfig = FPGAConfig{
-		FPGAType([2]byte{buf[8], buf[9]}),
-		FPGAPackage(buf[10]),
+		FPGAType([2]byte{b[8], b[9]}),
+		FPGAPackage(b[10]),
+		FPGAGrade([3]byte{b[11], b[12], b[13]}),
 	}
 	d.RAMConfig = RAMConfig{
-		RAMSize(buf[14]),
-		RAMType(buf[15]),
+		RAMSize(b[14]),
+		RAMType(b[15]),
 	}
+	d.Bytes = b
 
 	for _, o := range opt {
 		if err := o(d); err != nil {
