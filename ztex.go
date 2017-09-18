@@ -275,15 +275,20 @@ func (r RAMConfig) String() string {
 	return fmt.Sprintf("%v %v", r.RAMSize, r.RAMType)
 }
 
-// Device represents a ZTEX USB-FPGA module.
-type Device struct {
-	*gousb.Device
-
+// DeviceConfig indicates the characteristics of the device.
+type DeviceConfig struct {
 	BoardConfig
 	FPGAConfig
 	RAMConfig
 
 	Bytes []byte
+}
+
+// Device represents a ZTEX USB-FPGA module.
+type Device struct {
+	*gousb.Device
+
+	DeviceConfig
 }
 
 // String returns a human-readable representation of the device.
@@ -300,7 +305,6 @@ func (d *Device) String() string {
 	lines = append(lines, fmt.Sprintf("FPGA: %v", d.FPGAConfig))
 	lines = append(lines, fmt.Sprintf("RAM: %v", d.RAMConfig))
 	lines = append(lines, fmt.Sprintf("Bytes: %v", d.Bytes))
-
 	return strings.Join(lines, "\n")
 }
 
