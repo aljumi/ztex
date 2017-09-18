@@ -210,7 +210,7 @@ type FPGAConfig struct {
 
 // String returns a human-readable representation of the FPGA version.
 func (f FPGAConfig) String() string {
-	return fmt.Sprintf("%v %v", f.FPGAType, f.FPGAPackage)
+	return fmt.Sprintf("%v %v %v", f.FPGAType, f.FPGAPackage, f.FPGAGrade)
 }
 
 // RAMSize indicates the amount of RAM available on the module.
