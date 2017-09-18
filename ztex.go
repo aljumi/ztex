@@ -198,7 +198,16 @@ type RAMSize uint8
 
 // String returns a human-readable representation of the RAM size.
 func (r RAMSize) String() string {
-	return fmt.Sprintf("%vB", (uint64(r&0xf0))<<((uint(r&0xf))+16))
+	switch b := (uint64(r & 0xf0)) << ((uint(r & 0xf)) + 16); {
+	case b&(1<<30-1) == 0:
+		return fmt.Sprintf("%v GiB (%v B)", b>>30, b)
+	case b&(1<<20-1) == 0:
+		return fmt.Sprintf("%v MiB (%v B)", b>>20, b)
+	case b&(1<<10-1) == 0:
+		return fmt.Sprintf("%v kiB (%v B)", b>>10, b)
+	default:
+		return fmt.Sprintf("%v B", b)
+	}
 }
 
 // Number returns a raw numeric representation of the RAM size.
