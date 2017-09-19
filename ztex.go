@@ -403,7 +403,7 @@ func OpenDevice(ctx *gousb.Context, opt ...DeviceOption) (*Device, error) {
 	if dev, err := ctx.OpenDeviceWithVIDPID(VendorID, ProductID); err != nil {
 		return nil, err
 	} else if dev == nil {
-		return nil, fmt.Errorf("OpenDeviceWithVIDPID: got nil device, want non-nil device")
+		return nil, fmt.Errorf("(*gousb.Context).OpenDeviceWithVIDPID: got nil device, want non-nil device")
 	} else {
 		d.Device = dev
 	}
@@ -413,9 +413,9 @@ func OpenDevice(ctx *gousb.Context, opt ...DeviceOption) (*Device, error) {
 	if n, err := d.Control(0xc0, 0x3b, 0, 0, b); err != nil {
 		return nil, err
 	} else if n != 128 {
-		return nil, fmt.Errorf("read from MAC EEPROM: got %v bytes, want %v bytes", n, 128)
+		return nil, fmt.Errorf("(*gousb.Device).Control: read from MAC EEPROM: got %v bytes, want %v bytes", n, 128)
 	} else if b[0] != 'C' || b[1] != 'D' || b[2] != '0' {
-		return nil, fmt.Errorf("read from MAC EEPROM: got signature %v, want signature %v", b[:3], []byte{'C', 'D', '0'})
+		return nil, fmt.Errorf("(*gousb.Device).Control: read from MAC EEPROM: got signature %v, want signature %v", b[:3], []byte{'C', 'D', '0'})
 	}
 	d.BoardConfig = BoardConfig{
 		BoardType(b[3]),
