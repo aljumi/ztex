@@ -369,20 +369,37 @@ type Device struct {
 
 // String returns a human-readable representation of the device.
 func (d *Device) String() string {
+	x := []string{}
+
 	mfr, _ := d.Manufacturer()
 	prd, _ := d.Product()
 	snr, _ := d.SerialNumber()
+	x = append(x, fmt.Sprintf("Manufacturer: %v", mfr))
+	x = append(x, fmt.Sprintf("Product: %v", prd))
+	x = append(x, fmt.Sprintf("Serial Number: %v", snr))
 
-	lines := []string{}
-	lines = append(lines, fmt.Sprintf("Manufacturer: %v", mfr))
-	lines = append(lines, fmt.Sprintf("Product: %v", prd))
-	lines = append(lines, fmt.Sprintf("Serial Number: %v", snr))
-	lines = append(lines, fmt.Sprintf("Board: %v", d.BoardConfig))
-	lines = append(lines, fmt.Sprintf("FPGA: %v", d.FPGAConfig))
-	lines = append(lines, fmt.Sprintf("RAM: %v", d.RAMConfig))
-	lines = append(lines, fmt.Sprintf("Bitstream: %v", d.BitstreamConfig))
+	x = append(x, fmt.Sprintf("Bus: %v", d.Desc.Bus))
+	x = append(x, fmt.Sprintf("Address: %v", d.Desc.Address))
+	x = append(x, fmt.Sprintf("Speed: %v", d.Desc.Speed))
+	x = append(x, fmt.Sprintf("Port: %v", d.Desc.Port))
 
-	return strings.Join(lines, "\n")
+	x = append(x, fmt.Sprintf("Spec: %v", d.Desc.Spec))
+	x = append(x, fmt.Sprintf("Device: %v", d.Desc.Device))
+
+	x = append(x, fmt.Sprintf("Vendor ID: %v", d.Desc.Vendor))
+	x = append(x, fmt.Sprintf("Product ID: %v", d.Desc.Product))
+
+	x = append(x, fmt.Sprintf("Class: %v", d.Desc.Class))
+	x = append(x, fmt.Sprintf("Subclass: %v", d.Desc.SubClass))
+	x = append(x, fmt.Sprintf("Protocol: %v", d.Desc.Protocol))
+	x = append(x, fmt.Sprintf("Maximum Control Packet Size: %v", d.Desc.MaxControlPacketSize))
+
+	x = append(x, fmt.Sprintf("Board: %v", d.BoardConfig))
+	x = append(x, fmt.Sprintf("FPGA: %v", d.FPGAConfig))
+	x = append(x, fmt.Sprintf("RAM: %v", d.RAMConfig))
+	x = append(x, fmt.Sprintf("Bitstream: %v", d.BitstreamConfig))
+
+	return strings.Join(x, "\n")
 }
 
 // DeviceOption represents a device option.
