@@ -29,7 +29,7 @@ func binaryPrefix(n uint64, unit string) string {
 	case n != 0 && n&(1<<10-1) == 0:
 		return fmt.Sprintf("%vki%v (%v%v)", n>>10, unit, n, unit)
 	default:
-		return fmt.Sprintf("%v%v", n, n)
+		return fmt.Sprintf("%v%v", n, unit)
 	}
 }
 
