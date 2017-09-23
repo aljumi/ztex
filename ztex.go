@@ -42,8 +42,22 @@ type ZTEXVersion uint8
 // ZTEXMagic indicates the presence of a ZTEX descriptor.
 type ZTEXMagic [4]uint8
 
+// String returns a human-readable description of the ZTEX magic bytes.
+func (z ZTEXMagic) String() string { return string(z.Bytes()) }
+
+// Bytes returns a raw representation of the ZTEX magic bytes.
+func (z ZTEXMagic) Bytes() []byte { return []byte{z[0], z[1], z[2], z[3]} }
+
 // ZTEXProduct represents a ZTEX product ID.
 type ZTEXProduct [4]uint8
+
+// String returns a human-readable description of the ZTEX product ID.
+func (z ZTEXProduct) String() string {
+	return fmt.Sprintf("%v.%v.%v.%v", z[0], z[1], z[2], z[3])
+}
+
+// Bytes returns a raw representation of the ZTEX product ID.
+func (z ZTEXProduct) Bytes() []byte { return []byte{z[0], z[1], z[2], z[3]} }
 
 // ZTEXFirmware indicates the version of the ZTEX firmware.
 type ZTEXFirmware uint8
