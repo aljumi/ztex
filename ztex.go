@@ -495,8 +495,26 @@ type FPGAInit uint8
 // FPGAResult represents the result of previous FPGA configuration.
 type FPGAResult uint8
 
-// FPGAOrder represents the bit order of the FPGA bitstream stored in flash.
-type FPGAOrder uint8
+// FPGASwapped represents the bit order of the FPGA bitstream.
+type FPGASwapped uint8
+
+// String returns a human-readable description of the bitstream bit order.
+func (f FPGASwapped) String() string {
+	switch f {
+	case 0:
+		return "Unswapped"
+	case 1:
+		return "Swapped"
+	default:
+		return Unknown
+	}
+}
+
+// Number returns the raw numeric representation of the bitstream bit order.
+func (f FPGASwapped) Number() uint8 { return uint8(f) }
+
+// Bool returns true if and only if the bitstream bit order is swapped.
+func (f FPGASwapped) Bool() bool { return f == 1 }
 
 // FPGAStatus indicates the status of the FPGA.
 type FPGAStatus struct {
@@ -505,7 +523,7 @@ type FPGAStatus struct {
 	FPGABytes
 	FPGAInit
 	FPGAResult
-	FPGAOrder
+	FPGASwapped
 }
 
 // FPGAStatus retrieves the current status of the FPGA on the device.
@@ -522,7 +540,7 @@ func (d *Device) FPGAStatus() (*FPGAStatus, error) {
 		FPGABytes([4]uint8{b[2], b[3], b[4], b[5]}),
 		FPGAInit(b[6]),
 		FPGAResult(b[7]),
-		FPGAOrder(b[8]),
+		FPGASwapped(b[8]),
 	}, nil
 }
 
