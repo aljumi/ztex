@@ -394,7 +394,7 @@ func (r RAMType) String() string {
 	case 9:
 		return "DDR2-1066 SDRAM"
 	case 10:
-		return "DDR3-400 SDRAM"
+		return "DDR3-800 SDRAM"
 	default:
 		return Unknown
 	}
