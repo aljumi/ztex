@@ -350,7 +350,7 @@ func (b BitstreamConfig) String() string {
 	return fmt.Sprintf("Size %v, Capacity %v, Start %v", b.BitstreamSize, b.BitstreamCapacity, b.BitstreamStart)
 }
 
-// DeviceConfig indicates the characteristics of the device.
+// DeviceConfig indicates the configuration of the device.
 type DeviceConfig struct {
 	BoardConfig
 	FPGAConfig
@@ -360,21 +360,22 @@ type DeviceConfig struct {
 	Bytes []byte
 }
 
-// Device represents a ZTEX USB-FPGA module.
-type Device struct {
-	*gousb.Device
-
-	DeviceConfig
-}
-
-// String returns a human-readable representation of the device.
-func (d *Device) String() string {
+// String returns a human-readable representation of the device configuration.
+func (d *DeviceConfig) String() string {
 	x := []string{}
 	x = append(x, fmt.Sprintf("Board: %v", d.BoardConfig))
 	x = append(x, fmt.Sprintf("FPGA: %v", d.FPGAConfig))
 	x = append(x, fmt.Sprintf("RAM: %v", d.RAMConfig))
 	x = append(x, fmt.Sprintf("Bitstream: %v", d.BitstreamConfig))
-	return strings.Join(x, "\n")
+	x = append(x, fmt.Sprintf("Bytes: %v", d.Bytes))
+	return strings.Join(x, "; ")
+}
+
+// Device represents a ZTEX USB-FPGA module.
+type Device struct {
+	*gousb.Device
+
+	DeviceConfig
 }
 
 // DeviceOption represents a device option.
