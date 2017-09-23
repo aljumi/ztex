@@ -477,15 +477,17 @@ func (f FPGAConfigured) Bool() bool { return f == 1 }
 // FPGAChecksum represents the number of bytes
 type FPGAChecksum uint8
 
-// FPGABytes represents the number of bytes transferred.
-type FPGABytes [4]uint8
+// FPGATransferred represents the number of bytes transferred.
+type FPGATransferred [4]uint8
 
 // String returns a human-readable description of the number of bytes
 // transferred.
-func (f FPGABytes) String() string { return fmt.Sprintf("%v", f.Number()) }
+func (f FPGATransferred) String() string {
+	return fmt.Sprintf("%v", binaryPrefix(uint64(f.Number()), "B"))
+}
 
 // Number returns the number of bytes transferred.
-func (f FPGABytes) Number() uint32 {
+func (f FPGATransferred) Number() uint32 {
 	return (uint32(f[0]) << 0) | (uint32(f[1]) << 8) | (uint32(f[2]) << 16) | (uint32(f[3]) << 24)
 }
 
@@ -520,7 +522,7 @@ func (f FPGASwapped) Bool() bool { return f == 1 }
 type FPGAStatus struct {
 	FPGAConfigured
 	FPGAChecksum
-	FPGABytes
+	FPGATransferred
 	FPGAInit
 	FPGAResult
 	FPGASwapped
@@ -537,7 +539,7 @@ func (d *Device) FPGAStatus() (*FPGAStatus, error) {
 	return &FPGAStatus{
 		FPGAConfigured(b[0]),
 		FPGAChecksum(b[1]),
-		FPGABytes([4]uint8{b[2], b[3], b[4], b[5]}),
+		FPGATransferred([4]uint8{b[2], b[3], b[4], b[5]}),
 		FPGAInit(b[6]),
 		FPGAResult(b[7]),
 		FPGASwapped(b[8]),
