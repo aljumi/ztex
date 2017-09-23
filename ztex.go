@@ -240,7 +240,11 @@ type FPGAConfig struct {
 
 // String returns a human-readable representation of the FPGA version.
 func (f FPGAConfig) String() string {
-	return fmt.Sprintf("Type %v, Package %v, Grade %v", f.FPGAType, f.FPGAPackage, f.FPGAGrade)
+	x := []string{}
+	x = append(x, fmt.Sprintf("Type %v", f.FPGAType))
+	x = append(x, fmt.Sprintf("Package %v", f.FPGAPackage))
+	x = append(x, fmt.Sprintf("Grade %v", f.FPGAGrade))
+	return strings.Join(x, ", ")
 }
 
 // RAMSize indicates the amount of RAM available on the module.
@@ -293,7 +297,10 @@ type RAMConfig struct {
 
 // String returns a human-readable representation of the RAM configuration.
 func (r RAMConfig) String() string {
-	return fmt.Sprintf("Size %v, Type %v", r.RAMSize, r.RAMType)
+	x := []string{}
+	x = append(x, fmt.Sprintf("Size %v", r.RAMSize))
+	x = append(x, fmt.Sprintf("Type %v", r.RAMType))
+	return strings.Join(x, ", ")
 }
 
 // BitstreamSize indicates the actual size of the FPGA bitstream in
@@ -347,7 +354,11 @@ type BitstreamConfig struct {
 // String returns a human-readable representation of the bitstream
 // configuration.
 func (b BitstreamConfig) String() string {
-	return fmt.Sprintf("Size %v, Capacity %v, Start %v", b.BitstreamSize, b.BitstreamCapacity, b.BitstreamStart)
+	x := []string{}
+	x = append(x, fmt.Sprintf("Size %v", b.BitstreamSize))
+	x = append(x, fmt.Sprintf("Capacity %v", b.BitstreamCapacity))
+	x = append(x, fmt.Sprintf("Start %v", b.BitstreamStart))
+	return strings.Join(x, ", ")
 }
 
 // DeviceConfig indicates the configuration of the device.
@@ -363,11 +374,11 @@ type DeviceConfig struct {
 // String returns a human-readable representation of the device configuration.
 func (d DeviceConfig) String() string {
 	x := []string{}
-	x = append(x, fmt.Sprintf("Board: %v", d.BoardConfig))
-	x = append(x, fmt.Sprintf("FPGA: %v", d.FPGAConfig))
-	x = append(x, fmt.Sprintf("RAM: %v", d.RAMConfig))
-	x = append(x, fmt.Sprintf("Bitstream: %v", d.BitstreamConfig))
-	return strings.Join(x, "; ")
+	x = append(x, fmt.Sprintf("Board %v", d.BoardConfig))
+	x = append(x, fmt.Sprintf("FPGA %v", d.FPGAConfig))
+	x = append(x, fmt.Sprintf("RAM %v", d.RAMConfig))
+	x = append(x, fmt.Sprintf("Bitstream %v", d.BitstreamConfig))
+	return strings.Join(x, ", ")
 }
 
 // Device represents a ZTEX USB-FPGA module.
@@ -409,35 +420,36 @@ func OpenDevice(ctx *gousb.Context, opt ...DeviceOption) (*Device, error) {
 	} else if b[0] != 'C' || b[1] != 'D' || b[2] != '0' {
 		return nil, fmt.Errorf("(*gousb.Device).Control: read from MAC EEPROM: got signature %v, want signature %v", b[:3], []byte{'C', 'D', '0'})
 	}
-	d.BoardConfig = BoardConfig{
-		BoardType(b[3]),
-		BoardVersion{
-			BoardSeries(b[4]),
-			BoardNumber(b[5]),
-			BoardVariant([2]byte{b[6], b[7]}),
+	d.DeviceConfig = DeviceConfig{
+		BoardConfig{
+			BoardType(b[3]),
+			BoardVersion{
+				BoardSeries(b[4]),
+				BoardNumber(b[5]),
+				BoardVariant([2]byte{b[6], b[7]}),
+			},
 		},
+		FPGAConfig{
+			FPGAType([2]byte{b[8], b[9]}),
+			FPGAPackage(b[10]),
+			FPGAGrade([3]byte{b[11], b[12], b[13]}),
+		},
+		RAMConfig{
+			RAMSize(b[14]),
+			RAMType(b[15]),
+		},
+		BitstreamConfig{
+			BitstreamSize([2]byte{b[26], b[27]}),
+			BitstreamCapacity([2]byte{b[28], b[29]}),
+			BitstreamStart([2]byte{b[30], b[31]}),
+		},
+		b,
 	}
-	d.FPGAConfig = FPGAConfig{
-		FPGAType([2]byte{b[8], b[9]}),
-		FPGAPackage(b[10]),
-		FPGAGrade([3]byte{b[11], b[12], b[13]}),
-	}
-	d.RAMConfig = RAMConfig{
-		RAMSize(b[14]),
-		RAMType(b[15]),
-	}
-	d.BitstreamConfig = BitstreamConfig{
-		BitstreamSize([2]byte{b[26], b[27]}),
-		BitstreamCapacity([2]byte{b[28], b[29]}),
-		BitstreamStart([2]byte{b[30], b[31]}),
-	}
-	d.Bytes = b
 
 	for _, o := range opt {
 		if err := o(d); err != nil {
 			return nil, err
 		}
 	}
-
 	return d, nil
 }
