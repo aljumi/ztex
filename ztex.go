@@ -411,10 +411,10 @@ func OpenDevice(ctx *gousb.Context, opt ...DeviceOption) (*Device, error) {
 
 	// VR 0x3b: MAC EEPROM support: Read from MAC EEPROM
 	b := make([]byte, 128)
-	if n, err := d.Control(0xc0, 0x3b, 0, 0, b); err != nil {
+	if nbr, err := d.Control(0xc0, 0x3b, 0, 0, b); err != nil {
 		return nil, err
-	} else if n != 128 {
-		return nil, fmt.Errorf("(*gousb.Device).Control: read from MAC EEPROM: got %v bytes, want %v bytes", n, 128)
+	} else if nbr != 128 {
+		return nil, fmt.Errorf("(*gousb.Device).Control: read from MAC EEPROM: got %v bytes, want %v bytes", nbr, 128)
 	} else if b[0] != 'C' || b[1] != 'D' || b[2] != '0' {
 		return nil, fmt.Errorf("(*gousb.Device).Control: read from MAC EEPROM: got signature %v, want signature %v", b[:3], []byte{'C', 'D', '0'})
 	}
@@ -449,4 +449,89 @@ func OpenDevice(ctx *gousb.Context, opt ...DeviceOption) (*Device, error) {
 		}
 	}
 	return d, nil
+}
+
+// FPGAConfigured indicates whether or not the FPGA is configured.
+type FPGAConfigured uint8
+
+// String returns a human-readable description of the FPGA configuration
+// indicator.
+func (f FPGAConfigured) String() string {
+	switch f {
+	case 0:
+		return "Unconfigured"
+	case 1:
+		return "Configured"
+	default:
+		return Unknown
+	}
+}
+
+// Number returns the raw numeric representation of the FPGA configuration
+// indicator.
+func (f FPGAConfigured) Number() uint8 { return uint8(f) }
+
+// Bool returns true if and only if the FPGA is configured.
+func (f FPGAConfigured) Bool() bool { return f == 1 }
+
+// FPGAChecksum represents the number of bytes
+type FPGAChecksum uint8
+
+// FPGABytes represents the number of bytes transferred.
+type FPGABytes [4]uint8
+
+// String returns a human-readable description of the number of bytes
+// transferred.
+func (f FPGABytes) String() string { return fmt.Sprintf("%v", f.Number()) }
+
+// Number returns the number of bytes transferred.
+func (f FPGABytes) Number() uint32 {
+	return (uint32(f[0]) << 0) | (uint32(f[1]) << 8) | (uint32(f[2]) << 16) | (uint32(f[3]) << 24)
+}
+
+// FPGAInit represents the number of INIT_B states.
+type FPGAInit uint8
+
+// FPGAResult represents the result of previous FPGA configuration.
+type FPGAResult uint8
+
+// FPGAOrder represents the bit order of the FPGA bitstream stored in flash.
+type FPGAOrder uint8
+
+// FPGAStatus indicates the status of the FPGA.
+type FPGAStatus struct {
+	FPGAConfigured
+	FPGAChecksum
+	FPGABytes
+	FPGAInit
+	FPGAResult
+	FPGAOrder
+}
+
+// FPGAStatus retrieves the current status of the FPGA on the device.
+func (d *Device) FPGAStatus() (*FPGAStatus, error) {
+	b := make([]byte, 9)
+	if nbr, err := d.Control(0xc0, 0x30, 0, 0, b); err != nil {
+		return nil, err
+	} else if nbr != 9 {
+		return nil, fmt.Errorf("(*gousb.Device).Control: get FPGA state: got %v bytes, want %v bytes", nbr, 9)
+	}
+	return &FPGAStatus{
+		FPGAConfigured(b[0]),
+		FPGAChecksum(b[1]),
+		FPGABytes([4]uint8{b[2], b[3], b[4], b[5]}),
+		FPGAInit(b[6]),
+		FPGAResult(b[7]),
+		FPGAOrder(b[8]),
+	}, nil
+}
+
+// ResetFPGA resets the FPGA on the device.
+func (d *Device) ResetFPGA() error {
+	if nbr, err := d.Control(0x40, 0x31, 0, 0, nil); err != nil {
+		return err
+	} else if nbr != 0 {
+		return fmt.Errorf("(*gousb.Device).Control: reset FPGA: got %v bytes, want %v bytes", nbr, 0)
+	}
+	return nil
 }
