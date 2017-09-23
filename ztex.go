@@ -361,7 +361,7 @@ type DeviceConfig struct {
 }
 
 // String returns a human-readable representation of the device configuration.
-func (d *DeviceConfig) String() string {
+func (d DeviceConfig) String() string {
 	x := []string{}
 	x = append(x, fmt.Sprintf("Board: %v", d.BoardConfig))
 	x = append(x, fmt.Sprintf("FPGA: %v", d.FPGAConfig))
