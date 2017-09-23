@@ -89,6 +89,8 @@ func (z ZTEXProduct) String() string {
 		p = "ZTEX USB-FPGA Module 2.02"
 	case z[0] == 10 && z[1] == 41:
 		p = "ZTEX USB-FPGA Module 2.14"
+	case z[0] == 10 && z[1] == 42:
+		p = "ZTEX USB3-FPGA Module 2.18"
 	case z[0] == 10:
 		p = "ZTEX"
 	}
