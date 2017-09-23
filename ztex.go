@@ -367,8 +367,6 @@ type DeviceConfig struct {
 	FPGAConfig
 	RAMConfig
 	BitstreamConfig
-
-	Bytes []byte
 }
 
 // String returns a human-readable representation of the device configuration.
@@ -443,7 +441,6 @@ func OpenDevice(ctx *gousb.Context, opt ...DeviceOption) (*Device, error) {
 			BitstreamCapacity([2]byte{b[28], b[29]}),
 			BitstreamStart([2]byte{b[30], b[31]}),
 		},
-		b,
 	}
 
 	for _, o := range opt {
