@@ -33,6 +33,117 @@ func binaryPrefix(n uint64, unit string) string {
 	}
 }
 
+// ZTEXSize represents the number of bytes in a ZTEX descriptor.
+type ZTEXSize uint8
+
+// ZTEXVersion represents the version of a ZTEX descriptor.
+type ZTEXVersion uint8
+
+// ZTEXMagic indicates the presence of a ZTEX descriptor.
+type ZTEXMagic [4]uint8
+
+// ZTEXProduct represents a ZTEX product ID.
+type ZTEXProduct [4]uint8
+
+// ZTEXFirmware indicates the version of the ZTEX firmware.
+type ZTEXFirmware uint8
+
+// ZTEXInterface indicates the version of the ZTEX interface.
+type ZTEXInterface uint8
+
+// ZTEXCapability indicates the capabilities supported by the ZTEX device.
+type ZTEXCapability [6]uint8
+
+// String returns a human-readable description of the ZTEX capabilities
+// supported by the device.
+func (z ZTEXCapability) String() string {
+	x := []string{}
+	x = append(x, fmt.Sprintf("EEPROM: %v", z.EEPROM()))
+	x = append(x, fmt.Sprintf("FPGA Configuration: %v", z.FPGAConfiguration()))
+	x = append(x, fmt.Sprintf("Flash Memory: %v", z.FlashMemory()))
+	x = append(x, fmt.Sprintf("Debug Helper: %v", z.DebugHelper()))
+	x = append(x, fmt.Sprintf("XMEGA: %v", z.XMEGA()))
+	x = append(x, fmt.Sprintf("High Speed FPGA Configuration: %v", z.HighSpeedFPGAConfiguration()))
+	x = append(x, fmt.Sprintf("MAC EEPROM: %v", z.MACEEPROM()))
+	x = append(x, fmt.Sprintf("MultiFPGA: %v", z.MultiFPGA()))
+	x = append(x, fmt.Sprintf("Temperature Sensor: %v", z.TemperatureSensor()))
+	x = append(x, fmt.Sprintf("Flash Memory 2: %v", z.FlashMemory2()))
+	x = append(x, fmt.Sprintf("FX3 Firmware: %v", z.FX3Firmware()))
+	x = append(x, fmt.Sprintf("Debug Helper 2: %v", z.DebugHelper2()))
+	x = append(x, fmt.Sprintf("Default Firmware Interface: %v", z.DefaultFirmwareInterface()))
+	return strings.Join(x, ", ")
+}
+
+// Function cap returns true if and only if ZTEX capability i.j is
+// supported by the device.
+func (z ZTEXCapability) cap(i, j uint) bool { return z[i]&(1<<j) != 0 }
+
+// EEPROM returns true if and only if the device has EEPROM support.
+func (z ZTEXCapability) EEPROM() bool { return z.cap(0, 0) }
+
+// FPGAConfiguration returns true if and only if the device has basic
+// FPGA configuration support.
+func (z ZTEXCapability) FPGAConfiguration() bool { return z.cap(0, 1) }
+
+// FlashMemory returns true if and only if the device has flash memory.
+func (z ZTEXCapability) FlashMemory() bool { return z.cap(0, 2) }
+
+// DebugHelper returns true if and only if the device has basic debug
+// helper support.
+func (z ZTEXCapability) DebugHelper() bool { return z.cap(0, 3) }
+
+// XMEGA returns true if and only if the device has XMEGA support.
+func (z ZTEXCapability) XMEGA() bool { return z.cap(0, 4) }
+
+// HighSpeedFPGAConfiguration returns true if and only if the device
+// supports high-speed FPGA configuration.
+func (z ZTEXCapability) HighSpeedFPGAConfiguration() bool { return z.cap(0, 5) }
+
+// MACEEPROM returns true if and only if the device has MAC EEPROM support.
+func (z ZTEXCapability) MACEEPROM() bool { return z.cap(0, 6) }
+
+// MultiFPGA returns true if and only if the device has multi-FPGA support.
+func (z ZTEXCapability) MultiFPGA() bool { return z.cap(0, 7) }
+
+// TemperatureSensor returns true if and only if the device has
+// temperature sensor support.
+func (z ZTEXCapability) TemperatureSensor() bool { return z.cap(1, 0) }
+
+// FlashMemory2 returns true if and only if the device has advanced
+// flash memory support.
+func (z ZTEXCapability) FlashMemory2() bool { return z.cap(1, 1) }
+
+// FX3Firmware returns true if and only if the device has FX3 firmware
+// support.
+func (z ZTEXCapability) FX3Firmware() bool { return z.cap(1, 2) }
+
+// DebugHelper2 returns true if and only if the device has advanced debug
+// helper support.
+func (z ZTEXCapability) DebugHelper2() bool { return z.cap(1, 3) }
+
+// DefaultFirmwareInterface returns true if and only if the device
+// supports the default firmware interface.
+func (z ZTEXCapability) DefaultFirmwareInterface() bool { return z.cap(1, 4) }
+
+// ZTEXModule represents product specific configuration.
+type ZTEXModule [12]uint8
+
+// ZTEXSerial represents the device serial number.
+type ZTEXSerial [10]uint8
+
+// ZTEXConfig represents the ZTEX device descriptor.
+type ZTEXConfig struct {
+	ZTEXSize
+	ZTEXVersion
+	ZTEXMagic
+	ZTEXProduct
+	ZTEXFirmware
+	ZTEXInterface
+	ZTEXCapability
+	ZTEXModule
+	ZTEXSerial
+}
+
 // BoardType indicates the board type associated with the device.
 type BoardType uint8
 
@@ -383,6 +494,7 @@ func (d DeviceConfig) String() string {
 type Device struct {
 	*gousb.Device
 
+	ZTEXConfig
 	DeviceConfig
 }
 
@@ -409,14 +521,37 @@ func OpenDevice(ctx *gousb.Context, opt ...DeviceOption) (*Device, error) {
 		d.Device = dev
 	}
 
-	// VR 0x3b: MAC EEPROM support: Read from MAC EEPROM
 	b := make([]byte, 128)
+
+	// VR 0x22: ZTEX descriptor: read ZTEX descriptor
+	if nbr, err := d.Control(0xc0, 0x22, 0, 0, b); err != nil {
+		return nil, err
+	} else if nbr != 40 {
+		return nil, fmt.Errorf("(*gousb.Device).Control: ZTEX descriptor: read ZTEX descriptor: got %v bytes, want %v bytes", nbr, 40)
+	} else if b[0] != 40 {
+		return nil, fmt.Errorf("(*gousb.Device).Control: ZTEX descriptor: read ZTEX descriptor: got size %v, want size %v", b[0], 40)
+	} else if b[1] != 1 {
+		return nil, fmt.Errorf("(*gousb.Device).Control: ZTEX descriptor: read ZTEX descriptor: got version %v, want version %v", b[0], 1)
+	}
+	d.ZTEXConfig = ZTEXConfig{
+		ZTEXSize(b[0]),
+		ZTEXVersion(b[1]),
+		ZTEXMagic([4]uint8{b[2], b[3], b[4], b[5]}),
+		ZTEXProduct([4]uint8{b[6], b[7], b[8], b[9]}),
+		ZTEXFirmware(b[10]),
+		ZTEXInterface(b[11]),
+		ZTEXCapability([6]uint8{b[12], b[13], b[14], b[15], b[16], b[17]}),
+		ZTEXModule([12]uint8{b[18], b[19], b[20], b[21], b[22], b[23], b[24], b[25], b[26], b[27], b[28], b[29]}),
+		ZTEXSerial([10]uint8{b[30], b[31], b[32], b[33], b[34], b[35], b[36], b[37], b[38], b[39]}),
+	}
+
+	// VR 0x3b: MAC EEPROM support: read from MAC EEPROM
 	if nbr, err := d.Control(0xc0, 0x3b, 0, 0, b); err != nil {
 		return nil, err
 	} else if nbr != 128 {
-		return nil, fmt.Errorf("(*gousb.Device).Control: read from MAC EEPROM: got %v bytes, want %v bytes", nbr, 128)
+		return nil, fmt.Errorf("(*gousb.Device).Control: MAC EEPROM support: read from MAC EEPROM: got %v bytes, want %v bytes", nbr, 128)
 	} else if b[0] != 'C' || b[1] != 'D' || b[2] != '0' {
-		return nil, fmt.Errorf("(*gousb.Device).Control: read from MAC EEPROM: got signature %v, want signature %v", b[:3], []byte{'C', 'D', '0'})
+		return nil, fmt.Errorf("(*gousb.Device).Control: MAC EEPROM support: read from MAC EEPROM: got signature %v, want signature %v", b[:3], []byte{'C', 'D', '0'})
 	}
 	d.DeviceConfig = DeviceConfig{
 		BoardConfig{
@@ -497,6 +632,17 @@ type FPGAInit uint8
 // FPGAResult represents the result of previous FPGA configuration.
 type FPGAResult uint8
 
+// String returns a human-readable description of the FPGA configuration
+// result.
+func (f FPGAResult) String() string {
+	switch f {
+	case 0:
+		return "Successful"
+	default:
+		return Unknown
+	}
+}
+
 // FPGASwapped represents the bit order of the FPGA bitstream.
 type FPGASwapped uint8
 
@@ -531,11 +677,14 @@ type FPGAStatus struct {
 // FPGAStatus retrieves the current status of the FPGA on the device.
 func (d *Device) FPGAStatus() (*FPGAStatus, error) {
 	b := make([]byte, 9)
+
+	// VR 0x30: FPGA configuration: get FPGA state
 	if nbr, err := d.Control(0xc0, 0x30, 0, 0, b); err != nil {
 		return nil, err
 	} else if nbr != 9 {
-		return nil, fmt.Errorf("(*gousb.Device).Control: get FPGA state: got %v bytes, want %v bytes", nbr, 9)
+		return nil, fmt.Errorf("(*gousb.Device).Control: FPGA configuration: get FPGA state: got %v bytes, want %v bytes", nbr, 9)
 	}
+
 	return &FPGAStatus{
 		FPGAConfigured(b[0]),
 		FPGAChecksum(b[1]),
@@ -548,10 +697,12 @@ func (d *Device) FPGAStatus() (*FPGAStatus, error) {
 
 // ResetFPGA resets the FPGA on the device.
 func (d *Device) ResetFPGA() error {
+	// VC 0x31: FPGA configuration: reset FPGA
 	if nbr, err := d.Control(0x40, 0x31, 0, 0, nil); err != nil {
 		return err
 	} else if nbr != 0 {
-		return fmt.Errorf("(*gousb.Device).Control: reset FPGA: got %v bytes, want %v bytes", nbr, 0)
+		return fmt.Errorf("(*gousb.Device).Control: FPGA configuration: reset FPGA: got %v bytes, want %v bytes", nbr, 0)
 	}
+
 	return nil
 }
