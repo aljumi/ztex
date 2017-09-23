@@ -53,7 +53,46 @@ type ZTEXProduct [4]uint8
 
 // String returns a human-readable description of the ZTEX product ID.
 func (z ZTEXProduct) String() string {
-	return fmt.Sprintf("%v.%v.%v.%v", z[0], z[1], z[2], z[3])
+	p := Unknown
+	switch {
+	case z[0] == 0 && z[1] == 0 && z[2] == 0 && z[3] == 0:
+		p = "Default"
+	case z[0] == 1:
+		p = "Experimental"
+	case z[0] == 10 && z[1] == 0 && z[2] == 1 && z[3] == 1:
+		p = "ZTEX BTCMiner"
+	case z[0] == 10 && z[1] == 11:
+		p = "ZTEX USB-FPGA Module 1.2"
+	case z[0] == 10 && z[1] == 12 && z[2] == 2 && (1 <= z[3] && z[3] <= 4):
+		p = "NIT"
+	case z[0] == 10 && z[1] == 12:
+		p = "ZTEX USB-FPGA Module 1.11"
+	case z[0] == 10 && z[1] == 13:
+		p = "ZTEX USB-FPGA Module 1.15"
+	case z[0] == 10 && z[1] == 14:
+		p = "ZTEX USB-FPGA Module 1.15x"
+	case z[0] == 10 && z[1] == 15:
+		p = "ZTEX USB-FPGA Module 1.15y"
+	case z[0] == 10 && z[1] == 16:
+		p = "ZTEX USB-FPGA Module 2.16"
+	case z[0] == 10 && z[1] == 17:
+		p = "ZTEX USB-FPGA Module 2.13"
+	case z[0] == 10 && z[1] == 18:
+		p = "ZTEX USB-FPGA Module 2.01"
+	case z[0] == 10 && z[1] == 19:
+		p = "ZTEX USB-FPGA Module 2.04"
+	case z[0] == 10 && z[1] == 20:
+		p = "ZTEX USB Module 1.0"
+	case z[0] == 10 && z[1] == 30:
+		p = "ZTEX USB-XMEGA Module 1.0"
+	case z[0] == 10 && z[1] == 40:
+		p = "ZTEX USB-FPGA Module 2.02"
+	case z[0] == 10 && z[1] == 41:
+		p = "ZTEX USB-FPGA Module 2.14"
+	case z[0] == 10:
+		p = "ZTEX"
+	}
+	return fmt.Sprintf("%v.%v.%v.%v (%v)", z[0], z[1], z[2], z[3], p)
 }
 
 // Bytes returns a raw representation of the ZTEX product ID.
