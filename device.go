@@ -8,30 +8,27 @@ import (
 	"github.com/google/gousb"
 )
 
-// DeviceConfig indicates the configuration of the device.
-type DeviceConfig struct {
+// Device represents a ZTEX USB device.
+type Device struct {
+	*gousb.Device
+
+	DescriptorConfig
 	BoardConfig
 	FPGAConfig
 	RAMConfig
 	BitstreamConfig
 }
 
-// String returns a human-readable representation of the device configuration.
-func (d DeviceConfig) String() string {
+// String returns a human-readable representation of the device.
+func (d *Device) String() string {
 	x := []string{}
+	x = append(x, fmt.Sprintf("Device(%v)", d.Device))
+	x = append(x, fmt.Sprintf("Descriptor(%v)", d.DescriptorConfig))
 	x = append(x, fmt.Sprintf("Board(%v)", d.BoardConfig))
 	x = append(x, fmt.Sprintf("FPGA(%v)", d.FPGAConfig))
 	x = append(x, fmt.Sprintf("RAM(%v)", d.RAMConfig))
 	x = append(x, fmt.Sprintf("Bitstream(%v)", d.BitstreamConfig))
 	return strings.Join(x, ", ")
-}
-
-// Device represents a ZTEX USB-FPGA module.
-type Device struct {
-	*gousb.Device
-
-	DescriptorConfig
-	DeviceConfig
 }
 
 // DeviceOption represents a device option.
@@ -43,6 +40,35 @@ func ControlTimeout(timeout time.Duration) DeviceOption {
 		d.ControlTimeout = timeout
 		return nil
 	}
+}
+
+// OpenDevice opens a ZTEX USB-FPGA module and returns its device handle.
+// If there are multiple modules present, then one is chosen arbitrarily.
+func OpenDevice(ctx *gousb.Context, opt ...DeviceOption) (*Device, error) {
+	d := &Device{}
+	if dev, err := ctx.OpenDeviceWithVIDPID(VendorID, ProductID); err != nil {
+		return nil, fmt.Errorf("(*gousb.Context).OpenDeviceWithVIDPID: %v", err)
+	} else if dev == nil {
+		return nil, fmt.Errorf("(*gousb.Context).OpenDeviceWithVIDPID: got nil device, want non-nil device")
+	} else {
+		d.Device = dev
+	}
+
+	if err := d.readDescriptorConfig(); err != nil {
+		return nil, err
+	}
+
+	if err := d.readDeviceConfig(); err != nil {
+		return nil, err
+	}
+
+	for _, o := range opt {
+		if err := o(d); err != nil {
+			return nil, err
+		}
+	}
+
+	return d, nil
 }
 
 func (d *Device) readDescriptorConfig() error {
@@ -86,61 +112,30 @@ func (d *Device) readDeviceConfig() error {
 		return fmt.Errorf("(*ztex.Device).Control: MAC EEPROM support: read from MAC EEPROM: got signature %v, want signature %v", b[:3], []byte{'C', 'D', '0'})
 	}
 
-	d.DeviceConfig = DeviceConfig{
-		BoardConfig{
-			BoardType(b[3]),
-			BoardVersion{
-				BoardSeries(b[4]),
-				BoardNumber(b[5]),
-				BoardVariant([2]byte{b[6], b[7]}),
-			},
+	d.BoardConfig = BoardConfig{
+		BoardType(b[3]),
+		BoardVersion{
+			BoardSeries(b[4]),
+			BoardNumber(b[5]),
+			BoardVariant([2]byte{b[6], b[7]}),
 		},
-		FPGAConfig{
-			FPGAType([2]byte{b[8], b[9]}),
-			FPGAPackage(b[10]),
-			FPGAGrade([3]byte{b[11], b[12], b[13]}),
-		},
-		RAMConfig{
-			RAMSize(b[14]),
-			RAMType(b[15]),
-		},
-		BitstreamConfig{
-			BitstreamSize([2]byte{b[26], b[27]}),
-			BitstreamCapacity([2]byte{b[28], b[29]}),
-			BitstreamStart([2]byte{b[30], b[31]}),
-		},
+	}
+	d.FPGAConfig = FPGAConfig{
+		FPGAType([2]byte{b[8], b[9]}),
+		FPGAPackage(b[10]),
+		FPGAGrade([3]byte{b[11], b[12], b[13]}),
+	}
+	d.RAMConfig = RAMConfig{
+		RAMSize(b[14]),
+		RAMType(b[15]),
+	}
+	d.BitstreamConfig = BitstreamConfig{
+		BitstreamSize([2]byte{b[26], b[27]}),
+		BitstreamCapacity([2]byte{b[28], b[29]}),
+		BitstreamStart([2]byte{b[30], b[31]}),
 	}
 
 	return nil
-}
-
-// OpenDevice opens a ZTEX USB-FPGA module and returns its device handle.
-// If there are multiple modules present, then one is chosen arbitrarily.
-func OpenDevice(ctx *gousb.Context, opt ...DeviceOption) (*Device, error) {
-	d := &Device{}
-	if dev, err := ctx.OpenDeviceWithVIDPID(VendorID, ProductID); err != nil {
-		return nil, fmt.Errorf("(*gousb.Context).OpenDeviceWithVIDPID: %v", err)
-	} else if dev == nil {
-		return nil, fmt.Errorf("(*gousb.Context).OpenDeviceWithVIDPID: got nil device, want non-nil device")
-	} else {
-		d.Device = dev
-	}
-
-	if err := d.readDescriptorConfig(); err != nil {
-		return nil, err
-	}
-
-	if err := d.readDeviceConfig(); err != nil {
-		return nil, err
-	}
-
-	for _, o := range opt {
-		if err := o(d); err != nil {
-			return nil, err
-		}
-	}
-
-	return d, nil
 }
 
 // ResetFX3 resets the Cypress CYUSB3033 EZ-USB FX3S controller on the
