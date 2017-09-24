@@ -54,7 +54,7 @@ type FlashError uint8
 func (f FlashError) String() string {
 	switch f {
 	case 0:
-		return "Ok"
+		return "None"
 	case 1:
 		return "Command Error"
 	case 2:
