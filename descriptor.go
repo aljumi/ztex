@@ -178,3 +178,18 @@ type DescriptorConfig struct {
 	DescriptorModule
 	DescriptorSerial
 }
+
+// String returns a human-readable description of a ZTEX device descriptor.
+func (d DescriptorConfig) String() string {
+	x := []string{}
+	x = append(x, fmt.Sprintf("Size(%v)", d.DescriptorSize))
+	x = append(x, fmt.Sprintf("Version(%v)", d.DescriptorVersion))
+	x = append(x, fmt.Sprintf("Magic(%v)", d.DescriptorMagic))
+	x = append(x, fmt.Sprintf("Product(%v)", d.DescriptorProduct))
+	x = append(x, fmt.Sprintf("Firmware(%v)", d.DescriptorFirmware))
+	x = append(x, fmt.Sprintf("Interface(%v)", d.DescriptorInterface))
+	x = append(x, fmt.Sprintf("Capability(%v)", d.DescriptorCapability))
+	x = append(x, fmt.Sprintf("Module(%v)", d.DescriptorModule))
+	x = append(x, fmt.Sprintf("Serial(%v)", d.DescriptorSerial))
+	return strings.Join(x, ", ")
+}
