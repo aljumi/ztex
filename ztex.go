@@ -1,2 +1,2 @@
-// Package ztex manages ZTEX USB-FPGA modules.
+// Package ztex manages ZTEX modules.
 package ztex

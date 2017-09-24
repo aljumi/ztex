@@ -146,8 +146,8 @@ func OpenDevice(ctx *gousb.Context, opt ...DeviceOption) (*Device, error) {
 // ResetFX3 resets the Cypress CYUSB3033 EZ-USB FX3S controller on the
 // device, if one is present.
 func (d *Device) ResetFX3() error {
-	if !d.DescriptorConfig.FX3Firmware() {
-		return fmt.Errorf("(*ztex.Device).ResetFX3: operation not supported")
+	if !d.DescriptorCapability.FX3Firmware() {
+		return fmt.Errorf("operation not supported")
 	}
 
 	if nbr, err := d.Control(0x40, 0xa1, 1, 0, nil); err != nil {
@@ -159,10 +159,10 @@ func (d *Device) ResetFX3() error {
 	return nil
 }
 
-// FPGAStatus retrieves the current status of the FPGA on the device.
+// FPGAStatus retrieves the current FPGA status.
 func (d *Device) FPGAStatus() (*FPGAStatus, error) {
-	if !d.DescriptorConfig.FPGAConfiguration() {
-		return nil, fmt.Errorf("(*ztex.Device).FPGAStatus: operation not supported")
+	if !d.DescriptorCapability.FPGAConfiguration() {
+		return nil, fmt.Errorf("operation not supported")
 	}
 
 	b := make([]byte, 9)
@@ -184,10 +184,10 @@ func (d *Device) FPGAStatus() (*FPGAStatus, error) {
 	}, nil
 }
 
-// ResetFPGA resets the FPGA on the device, if one is present.
+// ResetFPGA resets the FPGA on the device.
 func (d *Device) ResetFPGA() error {
-	if !d.DescriptorConfig.FPGAConfiguration() {
-		return fmt.Errorf("(*ztex.Device).ResetFPGA: operation not supported")
+	if !d.DescriptorCapability.FPGAConfiguration() {
+		return fmt.Errorf("operation not supported")
 	}
 
 	// VC 0x31: FPGA configuration: reset FPGA
