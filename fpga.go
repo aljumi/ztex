@@ -118,9 +118,9 @@ type FPGAConfigured uint8
 func (f FPGAConfigured) String() string {
 	switch f {
 	case 0:
-		return "Unconfigured"
-	case 1:
 		return "Configured"
+	case 1:
+		return "Unconfigured"
 	default:
 		return "Unknown"
 	}
@@ -131,7 +131,7 @@ func (f FPGAConfigured) String() string {
 func (f FPGAConfigured) Number() uint8 { return uint8(f) }
 
 // Bool returns true if and only if the FPGA is configured.
-func (f FPGAConfigured) Bool() bool { return f == 1 }
+func (f FPGAConfigured) Bool() bool { return f == 0 }
 
 // FPGAChecksum represents the number of bytes
 type FPGAChecksum uint8
