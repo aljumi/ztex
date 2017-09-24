@@ -205,7 +205,7 @@ func (d *Device) FlashStatus() (*FlashStatus, error) {
 	b := make([]byte, 8)
 
 	// VR 0x40: flash memory support: get flash state
-	if nbr, err := d.Control(0x40, 0x40, 0, 0, b); err != nil {
+	if nbr, err := d.Control(0xc0, 0x40, 0, 0, b); err != nil {
 		return nil, fmt.Errorf("(*gousb.Device).Control: flash memory support: get flash state: %v", err)
 	} else if nbr != 8 {
 		return nil, fmt.Errorf("(*gousb.Device).Control: flash memory support: get flash state: got %v bytes, want %v bytes", nbr, 8)
