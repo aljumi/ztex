@@ -146,9 +146,7 @@ func (f FPGATransferred) String() string {
 }
 
 // Number returns the number of bytes transferred.
-func (f FPGATransferred) Number() uint32 {
-	return (uint32(f[0]) << 0) | (uint32(f[1]) << 8) | (uint32(f[2]) << 16) | (uint32(f[3]) << 24)
-}
+func (f FPGATransferred) Number() uint32 { return bytesToUint32(f) }
 
 // FPGAInit represents the number of INIT_B states.
 type FPGAInit uint8
@@ -196,4 +194,16 @@ type FPGAStatus struct {
 	FPGAInit
 	FPGAResult
 	FPGASwapped
+}
+
+// String returns a human-readable description of the FPGA status.
+func (f FPGAStatus) String() string {
+	x := []string{}
+	x = append(x, fmt.Sprintf("Configured(%v)", f.FPGAConfigured))
+	x = append(x, fmt.Sprintf("Checksum(%v)", f.FPGAChecksum))
+	x = append(x, fmt.Sprintf("Transferred(%v)", f.FPGATransferred))
+	x = append(x, fmt.Sprintf("Init(%v)", f.FPGAInit))
+	x = append(x, fmt.Sprintf("Result(%v)", f.FPGAResult))
+	x = append(x, fmt.Sprintf("Swapped(%v)", f.FPGASwapped))
+	return strings.Join(x, ", ")
 }

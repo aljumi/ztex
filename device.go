@@ -194,3 +194,26 @@ func (d *Device) ResetFPGA() error {
 
 	return nil
 }
+
+// FlashStatus retrieves the current flash memory status.
+func (d *Device) FlashStatus() (*FlashStatus, error) {
+	if !d.DescriptorCapability.FlashMemory() {
+		return nil, fmt.Errorf("operation not supported")
+	}
+
+	b := make([]byte, 8)
+
+	// VR 0x40: flash memory support: get flash state
+	if nbr, err := d.Control(0xc0, 0x40, 0, 0, b); err != nil {
+		return nil, fmt.Errorf("(*gousb.Device).Control: flash memory support: get flash state: %v", err)
+	} else if nbr != 8 {
+		return nil, fmt.Errorf("(*gousb.Device).Control: flash memory support: get flash state: got %v bytes, want %v bytes", nbr, 8)
+	}
+
+	return &FlashStatus{
+		FlashEnabled(b[0]),
+		FlashSize([2]uint8{b[1], b[2]}),
+		FlashCount([4]uint8{b[3], b[4], b[5], b[6]}),
+		FlashError(b[7]),
+	}, nil
+}

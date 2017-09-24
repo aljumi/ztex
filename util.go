@@ -26,3 +26,11 @@ func binaryPrefix(n uint64, unit string) string {
 		return fmt.Sprintf("%v%v", n, unit)
 	}
 }
+
+func bytesToUint16(b [2]uint8) uint16 {
+	return (uint16(b[0]) << 0) | (uint16(b[1]) << 8)
+}
+
+func bytesToUint32(b [4]uint8) uint32 {
+	return (uint32(b[0]) << 0) | (uint32(b[1]) << 8) | (uint32(b[2]) << 16) | (uint32(b[3]) << 24)
+}

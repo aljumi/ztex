@@ -15,9 +15,7 @@ func (b BitstreamSize) String() string {
 }
 
 // Number returns a raw numeric representation of the bitstream size.
-func (b BitstreamSize) Number() uint16 {
-	return (uint16(b[0]) << 0) | (uint16(b[1]) << 8)
-}
+func (b BitstreamSize) Number() uint16 { return bytesToUint16(b) }
 
 // BitstreamCapacity indicates the maximum size of the FPGA bitstream in
 // 4 kiB sectors.
@@ -29,9 +27,7 @@ func (b BitstreamCapacity) String() string {
 }
 
 // Number returns a raw numeric representation of the bitstream size.
-func (b BitstreamCapacity) Number() uint16 {
-	return (uint16(b[0]) << 0) | (uint16(b[1]) << 8)
-}
+func (b BitstreamCapacity) Number() uint16 { return bytesToUint16(b) }
 
 // BitstreamStart indicates the start of the bitstream.
 type BitstreamStart [2]byte
@@ -42,9 +38,7 @@ func (b BitstreamStart) String() string {
 }
 
 // Number returns a raw numeric representation of the bitstream size.
-func (b BitstreamStart) Number() uint16 {
-	return (uint16(b[0]) << 0) | (uint16(b[1]) << 8)
-}
+func (b BitstreamStart) Number() uint16 { return bytesToUint16(b) }
 
 // BitstreamConfig indicates the configuration of the bitstream in flash.
 type BitstreamConfig struct {

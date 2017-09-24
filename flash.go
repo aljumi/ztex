@@ -1,0 +1,63 @@
+package ztex
+
+import (
+	"fmt"
+	"strings"
+)
+
+// FlashEnabled indicates whether or not the flash is enabled.
+type FlashEnabled uint8
+
+// String returns a human-readable description of whether or not the
+// flash is enabled.
+func (f FlashEnabled) String() string {
+	switch f {
+	case 0:
+		return "Disabled"
+	case 1:
+		return "Enabled"
+	default:
+		return "Unknown"
+	}
+}
+
+// FlashSize represents the size of a sector in the flash.
+type FlashSize [2]uint8
+
+// String returns a human-readable description of the size of a sector
+// in the flash.
+func (f FlashSize) String() string { return binaryPrefix(uint64(f.Number()), "B") }
+
+// Number returns the size of a sector in the flash.
+func (f FlashSize) Number() uint16 { return bytesToUint16(f) }
+
+// FlashCount represents the number of sectors in the flash.
+type FlashCount [4]uint8
+
+// String returns a human-readable description of the number of sectors
+// in the flash.
+func (f FlashCount) String() string { return fmt.Sprintf("%v", f.Number()) }
+
+// Number returns the number of sectors in the flash.
+func (f FlashCount) Number() uint32 { return bytesToUint32(f) }
+
+// FlashError represents the error code in the flash.
+type FlashError uint8
+
+// FlashStatus indicates the current status of the flash.
+type FlashStatus struct {
+	FlashEnabled
+	FlashSize
+	FlashCount
+	FlashError
+}
+
+// String returns a human-readable description of the flash status.
+func (f FlashStatus) String() string {
+	x := []string{}
+	x = append(x, fmt.Sprintf("Enabled(%v)", f.FlashEnabled))
+	x = append(x, fmt.Sprintf("Size(%v)", f.FlashSize))
+	x = append(x, fmt.Sprintf("Count(%v)", f.FlashCount))
+	x = append(x, fmt.Sprintf("Error(%v)", f.FlashError))
+	return strings.Join(x, ", ")
+}
