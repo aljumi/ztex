@@ -158,6 +158,14 @@ type DescriptorModule [12]uint8
 // DescriptorSerial represents the device serial number.
 type DescriptorSerial [10]uint8
 
+// String returns a human-readable description of the device serial number.
+func (d DescriptorSerial) String() string { return string(d.Bytes()) }
+
+// Bytes returns a raw representation of the device serial number.
+func (d DescriptorSerial) Bytes() []byte {
+	return []byte{d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7], d[8], d[9]}
+}
+
 // DescriptorConfig represents the ZTEX device descriptor.
 type DescriptorConfig struct {
 	DescriptorSize
