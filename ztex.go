@@ -569,7 +569,7 @@ func ControlTimeout(timeout time.Duration) DeviceOption {
 func OpenDevice(ctx *gousb.Context, opt ...DeviceOption) (*Device, error) {
 	d := &Device{}
 	if dev, err := ctx.OpenDeviceWithVIDPID(VendorID, ProductID); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("(*gousb.Context).OpenDeviceWithVIDPID: %v", err)
 	} else if dev == nil {
 		return nil, fmt.Errorf("(*gousb.Context).OpenDeviceWithVIDPID: got nil device, want non-nil device")
 	} else {
@@ -580,7 +580,7 @@ func OpenDevice(ctx *gousb.Context, opt ...DeviceOption) (*Device, error) {
 
 	// VR 0x22: ZTEX descriptor: read ZTEX descriptor
 	if nbr, err := d.Control(0xc0, 0x22, 0, 0, b); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("(*gousb.Device).Control: ZTEX descriptor: read ZTEX descriptor: %v", err)
 	} else if nbr != 40 {
 		return nil, fmt.Errorf("(*gousb.Device).Control: ZTEX descriptor: read ZTEX descriptor: got %v bytes, want %v bytes", nbr, 40)
 	} else if b[0] != 40 {
@@ -602,7 +602,7 @@ func OpenDevice(ctx *gousb.Context, opt ...DeviceOption) (*Device, error) {
 
 	// VR 0x3b: MAC EEPROM support: read from MAC EEPROM
 	if nbr, err := d.Control(0xc0, 0x3b, 0, 0, b); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("(*gousb.Device).Control: MAC EEPROM support: read from MAC EEPROM: %v", err)
 	} else if nbr != 128 {
 		return nil, fmt.Errorf("(*gousb.Device).Control: MAC EEPROM support: read from MAC EEPROM: got %v bytes, want %v bytes", nbr, 128)
 	} else if b[0] != 'C' || b[1] != 'D' || b[2] != '0' {
@@ -638,7 +638,24 @@ func OpenDevice(ctx *gousb.Context, opt ...DeviceOption) (*Device, error) {
 			return nil, err
 		}
 	}
+
 	return d, nil
+}
+
+// ResetFX3 resets the Cypress CYUSB3033 EZ-USB FX3S controller on the
+// device, if one is present.
+func (d *Device) ResetFX3() error {
+	if !d.ZTEXCapability.FX3Firmware() {
+		return fmt.Errorf("(*ztex.Device).ResetFX3: operation not supported")
+	}
+
+	if nbr, err := d.Control(0x40, 0xa1, 1, 0, nil); err != nil {
+		return fmt.Errorf("(*gousb.Device).Control: FX3 firmware: reset and boot from flash: %v", err)
+	} else if nbr != 0 {
+		return fmt.Errorf("(*gousb.Device).Control: FX3 firmware: reset and boot from flash: got %v bytes, want %v bytes", nbr, 0)
+	}
+
+	return nil
 }
 
 // FPGAConfigured indicates whether or not the FPGA is configured.
@@ -731,11 +748,15 @@ type FPGAStatus struct {
 
 // FPGAStatus retrieves the current status of the FPGA on the device.
 func (d *Device) FPGAStatus() (*FPGAStatus, error) {
+	if !d.ZTEXCapability.FPGAConfiguration() {
+		return nil, fmt.Errorf("(*ztex.Device).FPGAStatus: operation not supported")
+	}
+
 	b := make([]byte, 9)
 
 	// VR 0x30: FPGA configuration: get FPGA state
 	if nbr, err := d.Control(0xc0, 0x30, 0, 0, b); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("(*gousb.Device).Control: FPGA configuration: get FPGA state: %v", err)
 	} else if nbr != 9 {
 		return nil, fmt.Errorf("(*gousb.Device).Control: FPGA configuration: get FPGA state: got %v bytes, want %v bytes", nbr, 9)
 	}
@@ -750,11 +771,15 @@ func (d *Device) FPGAStatus() (*FPGAStatus, error) {
 	}, nil
 }
 
-// ResetFPGA resets the FPGA on the device.
+// ResetFPGA resets the FPGA on the device, if one is present.
 func (d *Device) ResetFPGA() error {
+	if !d.ZTEXCapability.FPGAConfiguration() {
+		return fmt.Errorf("(*ztex.Device).ResetFPGA: operation not supported")
+	}
+
 	// VC 0x31: FPGA configuration: reset FPGA
 	if nbr, err := d.Control(0x40, 0x31, 0, 0, nil); err != nil {
-		return err
+		return fmt.Errorf("(*gousb.Device).Control: FPGA configuration: reset FPGA: %v", err)
 	} else if nbr != 0 {
 		return fmt.Errorf("(*gousb.Device).Control: FPGA configuration: reset FPGA: got %v bytes, want %v bytes", nbr, 0)
 	}
