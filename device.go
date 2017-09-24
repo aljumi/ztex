@@ -212,7 +212,7 @@ func (d *Device) FlashStatus() (*FlashStatus, error) {
 
 	return &FlashStatus{
 		FlashEnabled(b[0]),
-		FlashSize([2]uint8{b[1], b[2]}),
+		FlashSector([2]uint8{b[1], b[2]}),
 		FlashCount([4]uint8{b[3], b[4], b[5], b[6]}),
 		FlashError(b[7]),
 	}, nil

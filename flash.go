@@ -21,17 +21,17 @@ func (f FlashEnabled) String() string {
 	}
 }
 
-// FlashSize represents the size of a sector in the flash.
-type FlashSize [2]uint8
+// FlashSector represents the size of a sector in the flash.
+type FlashSector [2]uint8
 
 // String returns a human-readable description of the size of a sector
 // in the flash.
-func (f FlashSize) String() string { return binaryPrefix(uint64(f.Number()), "B") }
+func (f FlashSector) String() string { return binaryPrefix(uint64(f.Number()), "B") }
 
-// Number returns the size of a sector in the flash.
-func (f FlashSize) Number() uint16 {
+// Number returns the size of a sector in the flash (in bytes).
+func (f FlashSector) Number() uint16 {
 	z := bytesToUint16(f)
-	if z&0x8000 == 0 {
+	if z&0x8000 != 0 {
 		z = 1 << (z & 0x7fff)
 	}
 	return z
@@ -53,7 +53,7 @@ type FlashError uint8
 // FlashStatus indicates the current status of the flash.
 type FlashStatus struct {
 	FlashEnabled
-	FlashSize
+	FlashSector
 	FlashCount
 	FlashError
 }
@@ -62,7 +62,7 @@ type FlashStatus struct {
 func (f FlashStatus) String() string {
 	x := []string{}
 	x = append(x, fmt.Sprintf("Enabled(%v)", f.FlashEnabled))
-	x = append(x, fmt.Sprintf("Size(%v)", f.FlashSize))
+	x = append(x, fmt.Sprintf("Sector(%v)", f.FlashSector))
 	x = append(x, fmt.Sprintf("Count(%v)", f.FlashCount))
 	x = append(x, fmt.Sprintf("Error(%v)", f.FlashError))
 	return strings.Join(x, ", ")
