@@ -26,11 +26,11 @@ type FlashSector [2]uint8
 
 // String returns a human-readable description of the size of a sector
 // in the flash.
-func (f FlashSector) String() string { return binaryPrefix(uint64(f.Number()), "B") }
+func (f FlashSector) String() string { return binaryPrefix(f.Number(), "B") }
 
 // Number returns the size of a sector in the flash (in bytes).
-func (f FlashSector) Number() uint16 {
-	z := bytesToUint16(f)
+func (f FlashSector) Number() uint64 {
+	z := uint64(bytesToUint16(f))
 	if z&0x8000 != 0 {
 		z = 1 << (z & 0x7fff)
 	}
