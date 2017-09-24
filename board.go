@@ -2,6 +2,7 @@ package ztex
 
 import (
 	"fmt"
+	"strings"
 )
 
 // BoardType indicates the board type associated with the device.
@@ -90,19 +91,7 @@ func (b BoardVersion) String() string {
 }
 
 // BoardConfig indicates the type, series, number, and variant of a ZTEX
-// USB-FPGA module.  For example, a ZTEX USB3-FPGA 2.18b module would be
-// represented by
-//
-//   BoardConfig{
-//     BoardType: BoardType(3),
-//     BoardVersion{
-//       BoardSeries: BoardSeries(2),
-//       BoardNumber: BoardNumber(18),
-//       BoardVariant: BoardVariant([2]byte{0x62, 0x00}]),
-//     },
-//   }
-//
-// as a BoardConfig structure.
+// USB-FPGA module.
 type BoardConfig struct {
 	BoardType
 	BoardVersion
@@ -110,5 +99,8 @@ type BoardConfig struct {
 
 // String returns a human-readable representation of a board version.
 func (b BoardConfig) String() string {
-	return fmt.Sprintf("Type %v, Version %v.%v%v", b.BoardType, b.BoardSeries, b.BoardNumber, b.BoardVariant)
+	x := []string{}
+	x = append(x, fmt.Sprintf("Type(%v)", b.BoardType))
+	x = append(x, fmt.Sprintf("Version(%v)", b.BoardVersion))
+	return strings.Join(x, ", ")
 }

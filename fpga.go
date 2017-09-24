@@ -104,9 +104,9 @@ type FPGAConfig struct {
 // String returns a human-readable representation of the FPGA version.
 func (f FPGAConfig) String() string {
 	x := []string{}
-	x = append(x, fmt.Sprintf("Type %v", f.FPGAType))
-	x = append(x, fmt.Sprintf("Package %v", f.FPGAPackage))
-	x = append(x, fmt.Sprintf("Grade %v", f.FPGAGrade))
+	x = append(x, fmt.Sprintf("Type(%v)", f.FPGAType))
+	x = append(x, fmt.Sprintf("Package(%v)", f.FPGAPackage))
+	x = append(x, fmt.Sprintf("Grade(%v)", f.FPGAGrade))
 	return strings.Join(x, ", ")
 }
 

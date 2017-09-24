@@ -57,8 +57,8 @@ type BitstreamConfig struct {
 // configuration.
 func (b BitstreamConfig) String() string {
 	x := []string{}
-	x = append(x, fmt.Sprintf("Size %v", b.BitstreamSize))
-	x = append(x, fmt.Sprintf("Capacity %v", b.BitstreamCapacity))
-	x = append(x, fmt.Sprintf("Start %v", b.BitstreamStart))
+	x = append(x, fmt.Sprintf("Size(%v)", b.BitstreamSize))
+	x = append(x, fmt.Sprintf("Capacity(%v)", b.BitstreamCapacity))
+	x = append(x, fmt.Sprintf("Start(%v)", b.BitstreamStart))
 	return strings.Join(x, ", ")
 }

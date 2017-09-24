@@ -56,7 +56,7 @@ type RAMConfig struct {
 // String returns a human-readable representation of the RAM configuration.
 func (r RAMConfig) String() string {
 	x := []string{}
-	x = append(x, fmt.Sprintf("Size %v", r.RAMSize))
-	x = append(x, fmt.Sprintf("Type %v", r.RAMType))
+	x = append(x, fmt.Sprintf("Size(%v)", r.RAMSize))
+	x = append(x, fmt.Sprintf("Type(%v)", r.RAMType))
 	return strings.Join(x, ", ")
 }

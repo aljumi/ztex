@@ -85,19 +85,19 @@ type DescriptorCapability [6]uint8
 // supported by the device.
 func (d DescriptorCapability) String() string {
 	x := []string{}
-	x = append(x, fmt.Sprintf("EEPROM: %v", d.EEPROM()))
-	x = append(x, fmt.Sprintf("FPGA Configuration: %v", d.FPGAConfiguration()))
-	x = append(x, fmt.Sprintf("Flash Memory: %v", d.FlashMemory()))
-	x = append(x, fmt.Sprintf("Debug Helper: %v", d.DebugHelper()))
-	x = append(x, fmt.Sprintf("XMEGA: %v", d.XMEGA()))
-	x = append(x, fmt.Sprintf("High Speed FPGA Configuration: %v", d.HighSpeedFPGAConfiguration()))
-	x = append(x, fmt.Sprintf("MAC EEPROM: %v", d.MACEEPROM()))
-	x = append(x, fmt.Sprintf("MultiFPGA: %v", d.MultiFPGA()))
-	x = append(x, fmt.Sprintf("Temperature Sensor: %v", d.TemperatureSensor()))
-	x = append(x, fmt.Sprintf("Flash Memory 2: %v", d.FlashMemory2()))
-	x = append(x, fmt.Sprintf("FX3 Firmware: %v", d.FX3Firmware()))
-	x = append(x, fmt.Sprintf("Debug Helper 2: %v", d.DebugHelper2()))
-	x = append(x, fmt.Sprintf("Default Firmware Interface: %v", d.DefaultFirmwareInterface()))
+	x = append(x, fmt.Sprintf("EEPROM(%v)", d.EEPROM()))
+	x = append(x, fmt.Sprintf("FPGA Configuration(%v)", d.FPGAConfiguration()))
+	x = append(x, fmt.Sprintf("Flash Memory(%v)", d.FlashMemory()))
+	x = append(x, fmt.Sprintf("Debug Helper(%v)", d.DebugHelper()))
+	x = append(x, fmt.Sprintf("XMEGA(%v)", d.XMEGA()))
+	x = append(x, fmt.Sprintf("High Speed FPGA Configuration(%v)", d.HighSpeedFPGAConfiguration()))
+	x = append(x, fmt.Sprintf("MAC EEPROM(%v)", d.MACEEPROM()))
+	x = append(x, fmt.Sprintf("MultiFPGA(%v)", d.MultiFPGA()))
+	x = append(x, fmt.Sprintf("Temperature Sensor(%v)", d.TemperatureSensor()))
+	x = append(x, fmt.Sprintf("Flash Memory 2(%v)", d.FlashMemory2()))
+	x = append(x, fmt.Sprintf("FX3 Firmware(%v)", d.FX3Firmware()))
+	x = append(x, fmt.Sprintf("Debug Helper 2(%v)", d.DebugHelper2()))
+	x = append(x, fmt.Sprintf("Default Firmware Interface(%v)", d.DefaultFirmwareInterface()))
 	return strings.Join(x, ", ")
 }
 
