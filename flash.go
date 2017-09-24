@@ -29,7 +29,13 @@ type FlashSize [2]uint8
 func (f FlashSize) String() string { return binaryPrefix(uint64(f.Number()), "B") }
 
 // Number returns the size of a sector in the flash.
-func (f FlashSize) Number() uint16 { return bytesToUint16(f) }
+func (f FlashSize) Number() uint16 {
+	z := bytesToUint16(f)
+	if z&0x8000 == 0 {
+		z = 1 << (z & 0x7fff)
+	}
+	return z
+}
 
 // FlashCount represents the number of sectors in the flash.
 type FlashCount [4]uint8
