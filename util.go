@@ -17,11 +17,11 @@ const (
 func binaryPrefix(n uint64, unit string) string {
 	switch {
 	case n != 0 && n&(1<<30-1) == 0:
-		return fmt.Sprintf("%vGi%v [%v%v]", n>>30, unit, n, unit)
+		return fmt.Sprintf("%v%v [%vGi%v]", n, unit, n>>30, unit)
 	case n != 0 && n&(1<<20-1) == 0:
-		return fmt.Sprintf("%vMi%v [%v%v]", n>>20, unit, n, unit)
+		return fmt.Sprintf("%v%v [%vMi%v]", n, unit, n>>20, unit)
 	case n != 0 && n&(1<<10-1) == 0:
-		return fmt.Sprintf("%vki%v [%v%v]", n>>10, unit, n, unit)
+		return fmt.Sprintf("%v%v [%vki%v]", n, unit, n>>10, unit)
 	default:
 		return fmt.Sprintf("%v%v", n, unit)
 	}
