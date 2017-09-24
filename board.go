@@ -14,11 +14,11 @@ func (b BoardType) String() string {
 	case 1:
 		return "ZTEX FPGA Module"
 	case 2:
-		return "ZTEX USB-FPGA Module (Cypress CY7C68013A EZ-USB FX2)"
+		return "ZTEX USB-FPGA Module [Cypress CY7C68013A EZ-USB FX2]"
 	case 3:
-		return "ZTEX USB3-FPGA Module (Cypress CYUSB3033 EZ-USB FX3S)"
+		return "ZTEX USB3-FPGA Module [Cypress CYUSB3033 EZ-USB FX3S]"
 	default:
-		return Unknown
+		return "Unknown"
 	}
 }
 
@@ -37,7 +37,7 @@ func (b BoardSeries) String() string {
 	case 2:
 		return "2"
 	default:
-		return Unknown
+		return "Unknown"
 	}
 }
 
@@ -51,7 +51,7 @@ type BoardNumber uint8
 func (b BoardNumber) String() string {
 	switch {
 	case b == 255:
-		return Unknown
+		return "Unknown"
 	default:
 		return fmt.Sprintf("%d", uint8(b))
 	}

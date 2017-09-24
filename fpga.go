@@ -12,35 +12,35 @@ type FPGAType [2]byte
 func (f FPGAType) String() string {
 	switch f.Number() {
 	case 1:
-		return "Xilinx Spartan-6 XC6SLX9"
+		return "XC6SLX9 [Xilinx Spartan-6 XC6SLX9]"
 	case 2:
-		return "Xilinx Spartan-6 XC6SLX16"
+		return "XC6SLX16 [Xilinx Spartan-6 XC6SLX16]"
 	case 3:
-		return "Xilinx Spartan-6 XC6SLX25"
+		return "XC6SLX25 [Xilinx Spartan-6 XC6SLX25]"
 	case 4:
-		return "Xilinx Spartan-6 XC6SLX45"
+		return "XC6SLX45 [Xilinx Spartan-6 XC6SLX45]"
 	case 5:
-		return "Xilinx Spartan-6 XC6SLX75"
+		return "XC6SLX75 [Xilinx Spartan-6 XC6SLX75]"
 	case 6:
-		return "Xilinx Spartan-6 XC6SLX100"
+		return "XC6SLX100 [Xilinx Spartan-6 XC6SLX100]"
 	case 7:
-		return "Xilinx Spartan-6 XC6SLX150"
+		return "XC6SLX150 [Xilinx Spartan-6 XC6SLX150]"
 	case 8:
-		return "Xilinx Artix-7 XC7A35T"
+		return "XC7A35T [Xilinx Artix-7 XC7A35T]"
 	case 9:
-		return "Xilinx Artix-7 XC7A50T"
+		return "XC7A50T [Xilinx Artix-7 XC7A50T]"
 	case 10:
-		return "Xilinx Artix-7 XC7A75T"
+		return "XC7A75T [Xilinx Artix-7 XC7A75T]"
 	case 11:
-		return "Xilinx Artix-7 XC7A100T"
+		return "XC7A100T [Xilinx Artix-7 XC7A100T]"
 	case 12:
-		return "Xilinx Artix-7 XC7A200T"
+		return "XC7A200T [Xilinx Artix-7 XC7A200T]"
 	case 13:
-		return "Xilinx Spartan-6 XC6SLX150 (x4)"
+		return "XC6SLX150 [Xilinx Spartan-6 XC6SLX150 x 4]"
 	case 14:
-		return "Xilinx Artix-7 XC7A15T"
+		return "XC7A15T [Xilinx Artix-7 XC7A15T]"
 	default:
-		return Unknown
+		return "Unknown"
 	}
 }
 
@@ -65,7 +65,7 @@ func (f FPGAPackage) String() string {
 	case 4:
 		return "FBG484"
 	default:
-		return Unknown
+		return "Unknown"
 	}
 }
 
@@ -122,7 +122,7 @@ func (f FPGAConfigured) String() string {
 	case 1:
 		return "Configured"
 	default:
-		return Unknown
+		return "Unknown"
 	}
 }
 
@@ -163,7 +163,7 @@ func (f FPGAResult) String() string {
 	case 0:
 		return "Successful"
 	default:
-		return Unknown
+		return "Unknown"
 	}
 }
 
@@ -178,7 +178,7 @@ func (f FPGASwapped) String() string {
 	case 1:
 		return "Swapped"
 	default:
-		return Unknown
+		return "Unknown"
 	}
 }
 

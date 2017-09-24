@@ -25,7 +25,7 @@ type DescriptorProduct [4]uint8
 
 // String returns a human-readable description of the ZTEX product ID.
 func (d DescriptorProduct) String() string {
-	p := Unknown
+	p := "Unknown"
 	switch {
 	case d[0] == 0 && d[1] == 0 && d[2] == 0 && d[3] == 0:
 		p = "Default"
@@ -66,7 +66,7 @@ func (d DescriptorProduct) String() string {
 	case d[0] == 10:
 		p = "ZTEX"
 	}
-	return fmt.Sprintf("%v.%v.%v.%v (%v)", d[0], d[1], d[2], d[3], p)
+	return fmt.Sprintf("%v.%v.%v.%v [%v]", d[0], d[1], d[2], d[3], p)
 }
 
 // Bytes returns a raw representation of the ZTEX product ID.
