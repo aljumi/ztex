@@ -159,11 +159,23 @@ type FPGAResult uint8
 func (f FPGAResult) String() string {
 	switch f {
 	case 0:
-		return "Successful"
+		return "Configuration Successful"
+	case 1:
+		return "Already Configured Error"
+	case 2:
+		return "Flash Error"
+	case 3:
+		return "No Bitstream Error"
+	case 4:
+		return "Configuration Error"
 	default:
 		return "Unknown"
 	}
 }
+
+// Bool returns true if and only if the result indicates that
+// configuration was successful.
+func (f FPGAResult) Bool() bool { return f == 0 }
 
 // FPGASwapped represents the bit order of the FPGA bitstream.
 type FPGASwapped uint8

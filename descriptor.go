@@ -97,7 +97,7 @@ func (d DescriptorCapability) String() string {
 	x = append(x, fmt.Sprintf("Flash Memory 2(%v)", d.FlashMemory2()))
 	x = append(x, fmt.Sprintf("FX3 Firmware(%v)", d.FX3Firmware()))
 	x = append(x, fmt.Sprintf("Debug Helper 2(%v)", d.DebugHelper2()))
-	x = append(x, fmt.Sprintf("Default Firmware Interface(%v)", d.DefaultFirmwareInterface()))
+	x = append(x, fmt.Sprintf("Default Firmware(%v)", d.DefaultFirmware()))
 	return strings.Join(x, ", ")
 }
 
@@ -148,9 +148,9 @@ func (d DescriptorCapability) FX3Firmware() bool { return d.cap(1, 2) }
 // helper support.
 func (d DescriptorCapability) DebugHelper2() bool { return d.cap(1, 3) }
 
-// DefaultFirmwareInterface returns true if and only if the device
-// supports the default firmware interface.
-func (d DescriptorCapability) DefaultFirmwareInterface() bool { return d.cap(1, 4) }
+// DefaultFirmware returns true if and only if the device supports the
+// default firmware interface.
+func (d DescriptorCapability) DefaultFirmware() bool { return d.cap(1, 4) }
 
 // DescriptorModule represents product specific configuration.
 type DescriptorModule [12]uint8

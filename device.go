@@ -145,6 +145,7 @@ func (d *Device) ResetFX3() error {
 		return fmt.Errorf("operation not supported")
 	}
 
+	// VC 0xa1: FX3 support: reset FX3 controller
 	if nbr, err := d.Control(0x40, 0xa1, 1, 0, nil); err != nil {
 		return fmt.Errorf("(*gousb.Device).Control: FX3 firmware: reset and boot from flash: %v", err)
 	} else if nbr != 0 {
@@ -204,7 +205,7 @@ func (d *Device) FlashStatus() (*FlashStatus, error) {
 	b := make([]byte, 8)
 
 	// VR 0x40: flash memory support: get flash state
-	if nbr, err := d.Control(0xc0, 0x40, 0, 0, b); err != nil {
+	if nbr, err := d.Control(0x40, 0x40, 0, 0, b); err != nil {
 		return nil, fmt.Errorf("(*gousb.Device).Control: flash memory support: get flash state: %v", err)
 	} else if nbr != 8 {
 		return nil, fmt.Errorf("(*gousb.Device).Control: flash memory support: get flash state: got %v bytes, want %v bytes", nbr, 8)
@@ -216,4 +217,20 @@ func (d *Device) FlashStatus() (*FlashStatus, error) {
 		FlashCount([4]uint8{b[3], b[4], b[5], b[6]}),
 		FlashError(b[7]),
 	}, nil
+}
+
+// ResetDefaultFirmware resets the default firmware, if it is present.
+func (d *Device) ResetDefaultFirmware() error {
+	if !d.DescriptorCapability.DefaultFirmware() {
+		return fmt.Errorf("operation not supported")
+	}
+
+	// VC 0x60: default firmware interface: reset
+	if nbr, err := d.Control(0x40, 0x60, 0, 0, nil); err != nil {
+		return fmt.Errorf("(*gousb.Device).Control: default firmware interface: reset: %v", err)
+	} else if nbr != 0 {
+		return fmt.Errorf("(*gousb.Device).Control: default firmware interface: reset: got %v bytes, want %v bytes", nbr, 0)
+	}
+
+	return nil
 }
