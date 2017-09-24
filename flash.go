@@ -50,6 +50,32 @@ func (f FlashCount) Number() uint32 { return bytesToUint32(f) }
 // FlashError represents the error code in the flash.
 type FlashError uint8
 
+// String returns a human-readable description of the flash error code.
+func (f FlashError) String() string {
+	switch f {
+	case 0:
+		return "Ok"
+	case 1:
+		return "Command Error"
+	case 2:
+		return "Timeout Error"
+	case 3:
+		return "Busy Error"
+	case 4:
+		return "Pending Error"
+	case 5:
+		return "Read Error"
+	case 6:
+		return "Write Error"
+	case 7:
+		return "Unsupported Error"
+	case 8:
+		return "Runtime Error"
+	default:
+		return fmt.Sprintf("Unknown Error [%v]", uint8(f))
+	}
+}
+
 // FlashStatus indicates the current status of the flash.
 type FlashStatus struct {
 	FlashEnabled
