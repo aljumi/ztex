@@ -159,7 +159,7 @@ type FPGAResult uint8
 func (f FPGAResult) String() string {
 	switch f {
 	case 0:
-		return "Configuration Successful"
+		return "No Error"
 	case 1:
 		return "Already Configured Error"
 	case 2:
